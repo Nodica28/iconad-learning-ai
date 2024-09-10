@@ -1,0 +1,661 @@
+[
+  {
+    "title": "Basic Information",
+    "questions": [
+      {
+        "question": "What is your child's age?",
+        "type": "radio",
+        "options": [
+          {
+            "label": "2 to 3 years",
+            "value": "age_2_to_3",
+            "tags": ["age_2_to_3"]
+          },
+          {
+            "label": "3 to 4 years",
+            "value": "age_3_to_4",
+            "tags": ["age_3_to_4"]
+          },
+          {
+            "label": "4 to 5 years",
+            "value": "age_4_to_5",
+            "tags": ["age_4_to_5"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Communication and Language",
+    "questions": [
+      {
+        "question": "How would you describe your child's communication skills?",
+        "type": "radio",
+        "options": [
+          {
+            "label": "Emerging",
+            "value": "emerging",
+            "tags": ["language_development", "beginner"]
+          },
+          {
+            "label": "Developing",
+            "value": "developing",
+            "tags": ["language_development", "intermediate"]
+          },
+          {
+            "label": "Confident",
+            "value": "confident",
+            "tags": ["language_development", "advanced"]
+          }
+        ]
+      },
+      {
+        "question": "Which communication-related activities does your child enjoy?",
+        "type": "radio",
+        "options": [
+          {
+            "label": "Listening to stories",
+            "value": "listening_to_stories",
+            "tags": ["listening_and_attention", "passive"]
+          },
+          {
+            "label": "Learning new words",
+            "value": "learning_new_words",
+            "tags": ["vocabulary_building", "language_development"]
+          },
+          {
+            "label": "Engaging in conversations",
+            "value": "engaging_in_conversations",
+            "tags": ["speaking", "interactive"]
+          },
+          {
+            "label": "Following instructions",
+            "value": "following_instructions",
+            "tags": ["following_instructions", "interactive"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Physical Development",
+    "questions": [
+      {
+        "question": "What types of physical activities does your child enjoy the most?",
+        "type": "radio",
+        "options": [
+          {
+            "label": "Running and jumping",
+            "value": "running_and_jumping",
+            "tags": ["gross_motor_skills"]
+          },
+          {
+            "label": "Fine motor skills activities",
+            "value": "fine_motor_skills_activities",
+            "tags": ["fine_motor_skills"]
+          },
+          {
+            "label": "Hand-eye coordination games",
+            "value": "hand_eye_coordination_games",
+            "tags": ["hand_eye_coordination"]
+          },
+          {
+            "label": "Physical activities",
+            "value": "physical_activities",
+            "tags": ["physical_activities"]
+          }
+        ]
+      },
+      {
+        "question": "Is your child more interested in:",
+        "type": "radio",
+        "options": [
+          {
+            "label": "Outdoor play",
+            "value": "outdoor_play",
+            "tags": ["gross_motor_skills", "high_focus_required"]
+          },
+          {
+            "label": "Indoor activities",
+            "value": "indoor_activities",
+            "tags": [
+              "fine_motor_skills",
+              "problem_solving",
+              "low_focus_required"
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Personal, Social, and Emotional Development",
+    "questions": [
+      {
+        "question": "How does your child prefer to play?",
+        "type": "radio",
+        "options": [
+          {
+            "label": "Independently",
+            "value": "independently",
+            "tags": ["independent_play", "solo_play"]
+          },
+          {
+            "label": "With others",
+            "value": "with_others",
+            "tags": ["teamwork_and_sharing", "group_play"]
+          },
+          {
+            "label": "Mix of both",
+            "value": "mix_of_both",
+            "tags": ["independent_play", "teamwork_and_sharing", "group_play"]
+          }
+        ]
+      },
+      {
+        "question": "Does your child enjoy activities that encourage social interactions and sharing?",
+        "type": "radio",
+        "options": [
+          {
+            "label": "Yes",
+            "value": "yes",
+            "tags": ["teamwork_and_sharing", "social_skills"]
+          },
+          {
+            "label": "Sometimes",
+            "value": "sometimes",
+            "tags": ["social_skills", "emotion_recognition"]
+          },
+          {
+            "label": "Not much",
+            "value": "not_much",
+            "tags": ["independent_play", "self_regulation"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Literacy",
+    "questions": [
+      {
+        "question": "How interested is your child in literacy-related activities?",
+        "type": "radio",
+        "options": [
+          {
+            "label": "Very interested",
+            "value": "very_interested",
+            "tags": [
+              "alphabet_recognition",
+              "early_reading",
+              "phonics",
+              "story_comprehension"
+            ]
+          },
+          {
+            "label": "Somewhat interested",
+            "value": "somewhat_interested",
+            "tags": ["alphabet_recognition", "early_reading"]
+          },
+          {
+            "label": "Not very interested",
+            "value": "not_very_interested",
+            "tags": ["story_comprehension"]
+          }
+        ]
+      },
+      {
+        "question": "What literacy activities does your child enjoy?",
+        "type": "radio",
+        "options": [
+          {
+            "label": "Learning the alphabet",
+            "value": "learning_the_alphabet",
+            "tags": ["alphabet_recognition", "letter_writing"]
+          },
+          {
+            "label": "Listening to stories",
+            "value": "listening_to_stories",
+            "tags": ["story_comprehension", "listening_and_attention"]
+          },
+          {
+            "label": "Learning phonics or rhyming words",
+            "value": "learning_phonics",
+            "tags": ["phonics", "rhyming_and_poetry"]
+          },
+          {
+            "label": "Writing letters",
+            "value": "writing_letters",
+            "tags": ["letter_writing"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Mathematics",
+    "questions": [
+      {
+        "question": "What math-related activities does your child enjoy?",
+        "type": "radio",
+        "options": [
+          {
+            "label": "Counting objects",
+            "value": "counting_objects",
+            "tags": ["counting", "number_recognition"]
+          },
+          {
+            "label": "Learning shapes",
+            "value": "learning_shapes",
+            "tags": ["shapes", "spatial_awareness"]
+          },
+          {
+            "label": "Simple puzzles or math games",
+            "value": "simple_puzzles",
+            "tags": ["basic_operations", "problem_solving", "puzzles"]
+          }
+        ]
+      },
+      {
+        "question": "How comfortable is your child with early math skills?",
+        "type": "radio",
+        "options": [
+          {
+            "label": "Just starting",
+            "value": "just_starting",
+            "tags": ["beginner", "counting", "shapes"]
+          },
+          {
+            "label": "Comfortable but still learning",
+            "value": "comfortable_but_still_learning",
+            "tags": ["intermediate", "early_math_skills"]
+          },
+          {
+            "label": "Very confident",
+            "value": "very_confident",
+            "tags": ["advanced", "basic_operations"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Understanding the World",
+    "questions": [
+      {
+        "question": "What aspects of the world is your child most curious about?",
+        "type": "radio",
+        "options": [
+          {
+            "label": "Nature and animals",
+            "value": "nature_and_animals",
+            "tags": ["science_and_nature", "animals_and_habitats"]
+          },
+          {
+            "label": "People and communities",
+            "value": "people_and_communities",
+            "tags": ["cultures_and_communities"]
+          },
+          {
+            "label": "Seasons and weather",
+            "value": "seasons_and_weather",
+            "tags": ["seasons_and_weather"]
+          },
+          {
+            "label": "Technology",
+            "value": "technology",
+            "tags": ["technology_basics", "problem_solving"]
+          }
+        ]
+      },
+      {
+        "question": "Does your child enjoy exploring their surroundings (indoors and outdoors)?",
+        "type": "radio",
+        "options": [
+          {
+            "label": "Yes",
+            "value": "yes",
+            "tags": ["exploring_the_environment", "science_and_nature"]
+          },
+          {
+            "label": "Sometimes",
+            "value": "sometimes",
+            "tags": ["exploring_the_environment"]
+          },
+          {
+            "label": "No",
+            "value": "no",
+            "tags": ["indoor_play", "fine_motor_skills"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Expressive Arts and Design",
+    "questions": [
+      {
+        "question": "How does your child express themselves creatively?",
+        "type": "radio",
+        "options": [
+          {
+            "label": "Through drawing or painting",
+            "value": "drawing_or_painting",
+            "tags": ["arts_and_crafts", "creative_expression"]
+          },
+          {
+            "label": "Singing and dancing",
+            "value": "singing_and_dancing",
+            "tags": ["music_and_rhythm", "singing", "dancing"]
+          },
+          {
+            "label": "Pretend play or role-playing",
+            "value": "pretend_play",
+            "tags": ["pretend_play", "creative_expression"]
+          },
+          {
+            "label": "Building with blocks",
+            "value": "building_with_blocks",
+            "tags": ["building_blocks", "problem_solving"]
+          }
+        ]
+      },
+      {
+        "question": "What creative activities does your child prefer?",
+        "type": "radio",
+        "options": [
+          {
+            "label": "Drawing or crafting",
+            "value": "drawing_or_crafting",
+            "tags": ["arts_and_crafts"]
+          },
+          {
+            "label": "Singing or playing musical instruments",
+            "value": "singing_or_playing_musical_instruments",
+            "tags": ["music_and_rhythm", "singing"]
+          },
+          {
+            "label": "Pretend play",
+            "value": "pretend_play",
+            "tags": ["pretend_play"]
+          },
+          {
+            "label": "Building or designing structures",
+            "value": "building_or_designing_structures",
+            "tags": ["building_blocks"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Interest-Based Questions",
+    "questions": [
+      {
+        "question": "What are your child's favorite topics or interests?",
+        "type": "radio",
+        "options": [
+          { "label": "Animals", "value": "animals", "tags": ["animals"] },
+          { "label": "Vehicles", "value": "vehicles", "tags": ["vehicles"] },
+          { "label": "Dinosaurs", "value": "dinosaurs", "tags": ["dinosaurs"] },
+          {
+            "label": "Princesses or fairytales",
+            "value": "princesses_or_fairytales",
+            "tags": ["princesses_and_fairytales"]
+          },
+          {
+            "label": "Superheroes",
+            "value": "superheroes",
+            "tags": ["superheroes"]
+          },
+          { "label": "Space", "value": "space", "tags": ["space"] },
+          { "label": "Pirates", "value": "pirates", "tags": ["pirates"] },
+          {
+            "label": "Insects or bugs",
+            "value": "insects_or_bugs",
+            "tags": ["insects"]
+          },
+          {
+            "label": "Nature and plants",
+            "value": "nature_and_plants",
+            "tags": ["nature_and_plants"]
+          },
+          {
+            "label": "Construction or building things",
+            "value": "construction",
+            "tags": ["construction"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Content Type Preferences",
+    "questions": [
+      {
+        "question": "What type of content does your child prefer?",
+        "type": "radio",
+        "options": [
+          { "label": "Videos", "value": "videos", "tags": ["videos"] },
+          {
+            "label": "Interactive games",
+            "value": "interactive_games",
+            "tags": ["interactive_games"]
+          },
+          { "label": "Stories", "value": "stories", "tags": ["stories"] },
+          {
+            "label": "Puzzles or problem-solving activities",
+            "value": "puzzles",
+            "tags": ["puzzles"]
+          },
+          {
+            "label": "Printable activities",
+            "value": "printable_activities",
+            "tags": ["printable_activities"]
+          },
+          {
+            "label": "Hands-on crafting or building activities",
+            "value": "hands_on_activities",
+            "tags": ["hands_on_activities"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Learning Objectives",
+    "questions": [
+      {
+        "question": "Which areas of development would you like to focus on?",
+        "type": "radio",
+        "options": [
+          {
+            "label": "Social skills",
+            "value": "social_skills",
+            "tags": ["social_skills"]
+          },
+          {
+            "label": "Problem-solving",
+            "value": "problem_solving",
+            "tags": ["problem_solving"]
+          },
+          {
+            "label": "Memory and recognition",
+            "value": "memory_and_recognition",
+            "tags": ["memory_and_recognition"]
+          },
+          {
+            "label": "Creative expression",
+            "value": "creative_expression",
+            "tags": ["creative_expression"]
+          },
+          {
+            "label": "Language fluency",
+            "value": "language_fluency",
+            "tags": ["language_fluency"]
+          },
+          {
+            "label": "Emotional intelligence",
+            "value": "emotional_intelligence",
+            "tags": ["emotional_intelligence"]
+          },
+          {
+            "label": "Math skills",
+            "value": "early_math_skills",
+            "tags": ["early_math_skills"]
+          },
+          {
+            "label": "Motor skill development",
+            "value": "motor_skill_development",
+            "tags": ["motor_skill_development"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Engagement and Focus",
+    "questions": [
+      {
+        "question": "How long can your child typically engage with a single activity?",
+        "type": "radio",
+        "options": [
+          {
+            "label": "Less than 5 minutes",
+            "value": "less_than_5_minutes",
+            "tags": ["short", "low_focus_required"]
+          },
+          {
+            "label": "5-10 minutes",
+            "value": "5_to_10_minutes",
+            "tags": ["medium", "moderate_focus_required"]
+          },
+          {
+            "label": "More than 10 minutes",
+            "value": "more_than_10_minutes",
+            "tags": ["long", "high_focus_required"]
+          }
+        ]
+      },
+      {
+        "question": "What level of focus does your child typically need to enjoy an activity?",
+        "type": "radio",
+        "options": [
+          {
+            "label": "High focus required",
+            "value": "high_focus_required",
+            "tags": ["high_focus_required"]
+          },
+          {
+            "label": "Moderate focus required",
+            "value": "moderate_focus_required",
+            "tags": ["moderate_focus_required"]
+          },
+          {
+            "label": "Low focus required",
+            "value": "low_focus_required",
+            "tags": ["low_focus_required"]
+          }
+        ]
+      },
+      {
+        "question": "Do you prefer activities that require parental guidance?",
+        "type": "radio",
+        "options": [
+          {
+            "label": "Yes",
+            "value": "yes",
+            "tags": ["parental_guidance_needed"]
+          },
+          {
+            "label": "No, I prefer independent activities",
+            "value": "no",
+            "tags": ["self_guided"]
+          },
+          {
+            "label": "A mix of both",
+            "value": "mix_of_both",
+            "tags": ["parental_guidance_needed", "self_guided"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Difficulty and Skill Level",
+    "questions": [
+      {
+        "question": "How would you describe your child's current skill level in learning new things?",
+        "type": "radio",
+        "options": [
+          { "label": "Beginner", "value": "beginner", "tags": ["beginner"] },
+          {
+            "label": "Intermediate",
+            "value": "intermediate",
+            "tags": ["intermediate"]
+          },
+          { "label": "Advanced", "value": "advanced", "tags": ["advanced"] }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Special Needs and Considerations",
+    "questions": [
+      {
+        "question": "Does your child have any special needs or considerations we should be aware of?",
+        "type": "radio",
+        "options": [
+          { "label": "Sensory-friendly content", "value": "sensory_friendly" },
+          {
+            "label": "Special educational needs",
+            "value": "special_educational_needs",
+            "tags": ["special_educational_needs"]
+          },
+          {
+            "label": "Autism-friendly content",
+            "value": "autism_friendly",
+            "tags": ["autism_friendly"]
+          },
+          {
+            "label": "Visual impairment support",
+            "value": "visual_impairment_support",
+            "tags": ["visual_impairment_support"]
+          },
+          {
+            "label": "Hearing impairment support",
+            "value": "hearing_impairment_support",
+            "tags": ["hearing_impairment_support"]
+          },
+          {
+            "label": "Fine motor skill difficulties",
+            "value": "fine_motor_difficulties",
+            "tags": ["fine_motor_difficulties"]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "title": "Seasonal or Thematic Preferences",
+    "questions": [
+      {
+        "question": "Does your child enjoy content related to seasons or holidays?",
+        "type": "radio",
+        "options": [
+          {
+            "label": "Yes, seasonal content",
+            "value": "seasonal_themes",
+            "tags": ["seasonal_themes"]
+          },
+          {
+            "label": "Yes, holiday content",
+            "value": "holiday_themed",
+            "tags": ["holiday_themed"]
+          },
+          { "label": "No preference", "value": "no_preference" }
+        ]
+      }
+    ]
+  }
+]
