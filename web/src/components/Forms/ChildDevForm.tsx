@@ -13,11 +13,18 @@ import {
   StepLabel,
   Paper,
   IconButton,
+  Modal,
 } from "@mui/material";
+import {
+  createConversation,
+  listMessages,
+} from "../../api/conversationService";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import axios from "axios";
 import formValues from "../../constants/formValues.json";
+import ReactMarkdown from "react-markdown";
 
 const ChildDevelopmentForm: React.FC = () => {
   const [activeStep, setActiveStep] = useState(0);
@@ -25,6 +32,12 @@ const ChildDevelopmentForm: React.FC = () => {
   const [isStepComplete, setIsStepComplete] = useState(false);
   const [visibleStart, setVisibleStart] = useState(0);
   const [visibleEnd, setVisibleEnd] = useState(5);
+  const [summary, setSummary] = useState<Array<{ content: string }>>([]);
+  const [open, setOpen] = useState(false);
+  const [agentId, setAgentId] = useState(
+    "46625438-b2a3-41fe-ae96-a4bc0d0eb4ed"
+  );
+  const [conversationId, setConversationId] = useState(null);
   const steps = formValues.map((section) => section.title);
 
   useEffect(() => {
@@ -70,30 +83,49 @@ const ChildDevelopmentForm: React.FC = () => {
     setIsStepComplete(allQuestionsAnswered);
   };
 
-  const handleSubmit = () => {
-    const formattedAnswers = formValues.reduce(
-      (acc, section, sectionIndex) => {
-        acc[section.title] = section.questions.map(
-          (question, questionIndex) => {
-            const answerKey = `question_${sectionIndex}_${questionIndex}`;
-            return { [question.question]: answers[answerKey] };
-          }
-        );
-        return acc;
-      },
-      {} as Record<string, Array<Record<string, string>>>
-    );
+  const handleSubmit = async () => {
+    const formattedAnswers =
+      "send a summary of title, description, activity, and objective in this format:## Title\nActivity Plan for a [AGE_RANGE] Child\n\n## Description\nThis activity plan is designed for a [AGE_RANGE] child with [SKILL_LEVEL] [SKILL_TYPE] skills. The plan focuses on various developmental areas including [DEVELOPMENTAL_AREAS]. The activities are tailored to the child's interests and preferences, ensuring they are engaging and developmentally appropriate.\n\n## Activity\n### [DEVELOPMENTAL_AREA * INDEX]\n- **Activity**: [ACTIVITY_NAME]\n- **Description**: [ACTIVITY_DESCRIPTION]\n- **Objective**: [ACTIVITY_OBJECTIVE]\n\n## Objective\nThe primary objective is to focus on [PRIMARY_SKILL] while ensuring the activities are [ACTIVITY_CHARACTERISTIC_1] and require [ACTIVITY_CHARACTERISTIC_2] focus. The activities are designed to be engaging for [DURATION], aligning with the child's current attention span. The plan also incorporates [THEME_TYPE] themes to keep the content fresh and exciting.\n" +
+      JSON.stringify(
+        formValues.reduce(
+          (acc, section, sectionIndex) => {
+            acc[section.title] = section.questions.reduce(
+              (questionAcc, question, questionIndex) => {
+                const answerKey = `question_${sectionIndex}_${questionIndex}`;
+                questionAcc[question.question] = answers[answerKey] || "";
+                return questionAcc;
+              },
+              {}
+            );
+            return acc;
+          },
+          {} as Record<string, Record<string, string>>
+        )
+      );
 
-    const answersJson = JSON.stringify(formattedAnswers, null, 2);
-    const blob = new Blob([answersJson], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-    link.href = url;
-    link.download = "child_development_form_answers.json";
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    URL.revokeObjectURL(url);
+    try {
+      const message = { role: "user", content: formattedAnswers };
+      const response = await createConversation(agentId, message);
+
+      setConversationId(response.conversation_id);
+      handleListMessages();
+    } catch (error) {
+      console.error("Error submitting form:", error);
+    }
+  };
+
+  const handleListMessages = async () => {
+    const response = await listMessages(conversationId);
+    const mappedMessages = response
+      .map((item) => {
+        if (item.data.message.role === "agent") {
+          return item.data.message;
+        }
+        return null;
+      })
+      .filter(Boolean);
+    setOpen(true);
+    setSummary(mappedMessages);
   };
 
   const renderStepContent = (step: number) => {
@@ -241,6 +273,41 @@ const ChildDevelopmentForm: React.FC = () => {
           </Button>
         </Box>
       </Box>
+      <Modal
+        open={open}
+        onClose={() => setOpen(false)}
+        sx={{ overflow: "scroll" }}
+      >
+        <Box
+          sx={{
+            p: 4,
+            backgroundColor: "white",
+            borderRadius: 2,
+            maxWidth: 600,
+            margin: "auto",
+            mt: 4,
+          }}
+        >
+          <Typography variant="h6">Summary</Typography>
+          {summary &&
+            summary.map((item, index) => (
+              <Box
+                key={index}
+                sx={{
+                  backgroundColor: "#f0f0f0",
+                  borderRadius: "10px",
+                  padding: "10px",
+                  marginBottom: "10px",
+                }}
+              >
+                <ReactMarkdown>{item.content}</ReactMarkdown>
+              </Box>
+            ))}
+          <Button onClick={() => setOpen(false)} sx={{ mt: 2 }}>
+            Close
+          </Button>
+        </Box>
+      </Modal>
     </Paper>
   );
 };

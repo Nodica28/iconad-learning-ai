@@ -6,7 +6,11 @@ import Home from "./components/Pages/Home";
 function App() {
   const [count, setCount] = useState(0);
 
-  return <Home />;
+  return (
+    <>
+      <Home />
+    </>
+  );
 }
 
 export default App;
