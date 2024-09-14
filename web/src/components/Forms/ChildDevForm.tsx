@@ -26,6 +26,8 @@ import axios from "axios";
 import formValues from "../../constants/formValues.json";
 import ReactMarkdown from "react-markdown";
 
+const agentId = import.meta.env.VITE_REACT_APP_AGENT_ID;
+
 const ChildDevelopmentForm: React.FC = () => {
   const [activeStep, setActiveStep] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
@@ -34,9 +36,6 @@ const ChildDevelopmentForm: React.FC = () => {
   const [visibleEnd, setVisibleEnd] = useState(5);
   const [summary, setSummary] = useState<Array<{ content: string }>>([]);
   const [open, setOpen] = useState(false);
-  const [agentId, setAgentId] = useState(
-    "46625438-b2a3-41fe-ae96-a4bc0d0eb4ed"
-  );
   const [conversationId, setConversationId] = useState(null);
   const steps = formValues.map((section) => section.title);
 
@@ -84,24 +83,22 @@ const ChildDevelopmentForm: React.FC = () => {
   };
 
   const handleSubmit = async () => {
-    const formattedAnswers =
-      "send a summary of title, description, activity, and objective in this format:## Title\nActivity Plan for a [AGE_RANGE] Child\n\n## Description\nThis activity plan is designed for a [AGE_RANGE] child with [SKILL_LEVEL] [SKILL_TYPE] skills. The plan focuses on various developmental areas including [DEVELOPMENTAL_AREAS]. The activities are tailored to the child's interests and preferences, ensuring they are engaging and developmentally appropriate.\n\n## Activity\n### [DEVELOPMENTAL_AREA * INDEX]\n- **Activity**: [ACTIVITY_NAME]\n- **Description**: [ACTIVITY_DESCRIPTION]\n- **Objective**: [ACTIVITY_OBJECTIVE]\n\n## Objective\nThe primary objective is to focus on [PRIMARY_SKILL] while ensuring the activities are [ACTIVITY_CHARACTERISTIC_1] and require [ACTIVITY_CHARACTERISTIC_2] focus. The activities are designed to be engaging for [DURATION], aligning with the child's current attention span. The plan also incorporates [THEME_TYPE] themes to keep the content fresh and exciting.\n" +
-      JSON.stringify(
-        formValues.reduce(
-          (acc, section, sectionIndex) => {
-            acc[section.title] = section.questions.reduce(
-              (questionAcc, question, questionIndex) => {
-                const answerKey = `question_${sectionIndex}_${questionIndex}`;
-                questionAcc[question.question] = answers[answerKey] || "";
-                return questionAcc;
-              },
-              {}
-            );
-            return acc;
-          },
-          {} as Record<string, Record<string, string>>
-        )
-      );
+    const formattedAnswers = JSON.stringify(
+      formValues.reduce(
+        (acc, section, sectionIndex) => {
+          acc[section.title] = section.questions.reduce(
+            (questionAcc, question, questionIndex) => {
+              const answerKey = `question_${sectionIndex}_${questionIndex}`;
+              questionAcc[question.question] = answers[answerKey] || "";
+              return questionAcc;
+            },
+            {}
+          );
+          return acc;
+        },
+        {} as Record<string, Record<string, string>>
+      )
+    );
 
     try {
       const message = { role: "user", content: formattedAnswers };
@@ -115,17 +112,26 @@ const ChildDevelopmentForm: React.FC = () => {
   };
 
   const handleListMessages = async () => {
-    const response = await listMessages(conversationId);
-    const mappedMessages = response
-      .map((item) => {
-        if (item.data.message.role === "agent") {
-          return item.data.message;
-        }
-        return null;
-      })
-      .filter(Boolean);
-    setOpen(true);
-    setSummary(mappedMessages);
+    if (!conversationId) {
+      console.error("No conversation ID available");
+      return;
+    }
+
+    try {
+      const response = await listMessages(conversationId);
+      const mappedMessages = response
+        .map((item) => {
+          if (item.data.message.role === "agent") {
+            return item.data.message;
+          }
+          return null;
+        })
+        .filter(Boolean);
+      setOpen(true);
+      setSummary(mappedMessages);
+    } catch (error) {
+      console.error("Error listing messages:", error);
+    }
   };
 
   const renderStepContent = (step: number) => {
@@ -298,6 +304,9 @@ const ChildDevelopmentForm: React.FC = () => {
                   borderRadius: "10px",
                   padding: "10px",
                   marginBottom: "10px",
+                  overflowWrap: "break-word",
+                  wordWrap: "break-word",
+                  wordBreak: "break-word",
                 }}
               >
                 <ReactMarkdown>{item.content}</ReactMarkdown>
