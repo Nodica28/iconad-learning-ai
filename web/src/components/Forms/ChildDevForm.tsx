@@ -17,7 +17,9 @@ import {
 } from "@mui/material";
 import {
   createConversation,
+  continueConversation,
   listMessages,
+  pollConversation,
 } from "../../api/conversationService";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
@@ -26,7 +28,7 @@ import axios from "axios";
 import formValues from "../../constants/formValues.json";
 import ReactMarkdown from "react-markdown";
 
-const agentId = import.meta.env.VITE_REACT_APP_AGENT_ID;
+const assistantId = import.meta.env.VITE_REACT_APP_ASSISTANT_ID;
 
 const ChildDevelopmentForm: React.FC = () => {
   const [activeStep, setActiveStep] = useState(0);
@@ -36,7 +38,7 @@ const ChildDevelopmentForm: React.FC = () => {
   const [visibleEnd, setVisibleEnd] = useState(5);
   const [summary, setSummary] = useState<Array<{ content: string }>>([]);
   const [open, setOpen] = useState(false);
-  const [conversationId, setConversationId] = useState(null);
+  const [threadId, setThreadId] = useState(null);
   const steps = formValues.map((section) => section.title);
 
   useEffect(() => {
@@ -101,10 +103,12 @@ const ChildDevelopmentForm: React.FC = () => {
     );
 
     try {
+      const thread = await createConversation();
+      setThreadId(thread.id);
       const message = { role: "user", content: formattedAnswers };
-      const response = await createConversation(agentId, message);
+      await continueConversation(threadId, message);
+      await pollConversation(assistantId, threadId);
 
-      setConversationId(response.conversation_id);
       handleListMessages();
     } catch (error) {
       console.error("Error submitting form:", error);
@@ -112,21 +116,20 @@ const ChildDevelopmentForm: React.FC = () => {
   };
 
   const handleListMessages = async () => {
-    if (!conversationId) {
+    if (!threadId) {
       console.error("No conversation ID available");
       return;
     }
 
     try {
-      const response = await listMessages(conversationId);
+      const response = await listMessages(threadId);
+
       const mappedMessages = response
-        .map((item) => {
-          if (item.data.message.role === "agent") {
-            return item.data.message;
-          }
-          return null;
-        })
-        .filter(Boolean);
+        .filter((item) => item.role === "assistant")
+        .map((item) => ({
+          content: item.content[0].text.value,
+        }));
+
       setOpen(true);
       setSummary(mappedMessages);
     } catch (error) {
@@ -309,7 +312,15 @@ const ChildDevelopmentForm: React.FC = () => {
                   wordBreak: "break-word",
                 }}
               >
-                <ReactMarkdown>{item.content}</ReactMarkdown>
+                <ReactMarkdown
+                  components={{
+                    code: ({ children }) => (
+                      <code style={{ whiteSpace: "pre-wrap" }}>{children}</code>
+                    ),
+                  }}
+                >
+                  {item.content}
+                </ReactMarkdown>
               </Box>
             ))}
           <Button onClick={() => setOpen(false)} sx={{ mt: 2 }}>

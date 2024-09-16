@@ -1,7 +1,7 @@
 require("dotenv").config();
 
 const express = require("express");
-const conversationRoutes = require("./routes/conversation");
+const conversationRoutes = require("./routes/openaiRoutes");
 const cors = require("cors");
 
 const app = express();

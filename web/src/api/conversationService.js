@@ -2,32 +2,36 @@ import axios from "axios";
 
 const BASE_URL = "http://localhost:5000/api/conversation";
 
-const createConversation = async (agent_id, message) => {
-  const response = await axios.post(`${BASE_URL}/create`, {
-    agent_id,
-    message,
+const createAssistant = async (assistant_id) => {
+  const response = await axios.get(`${BASE_URL}/assistant/${assistant_id}`);
+  return response.data;
+};
+
+const createConversation = async () => {
+  const response = await axios.post(`${BASE_URL}/threads`);
+  return response.data;
+};
+
+const pollConversation = async (assistant_id, thread_id) => {
+  const response = await axios.post(`${BASE_URL}/poll`, {
+    assistant_id,
+    thread_id,
   });
   return response.data;
 };
 
-const pollConversation = async (studioId, jobId) => {
-  const response = await axios.get(`${BASE_URL}/poll/${studioId}/${jobId}`);
+const continueConversation = async (thread_id, messages) => {
+  const response = await axios.post(
+    `${BASE_URL}/threads/${thread_id}/messages`,
+    {
+      messages,
+    }
+  );
   return response.data;
 };
 
-const continueConversation = async (agent_id, conversation_id, message) => {
-  const response = await axios.post(`${BASE_URL}/continue`, {
-    agent_id,
-    conversation_id,
-    message,
-  });
-  return response.data;
-};
-
-const listMessages = async (conversation_id) => {
-  const response = await axios.post(`${BASE_URL}/list`, {
-    conversation_id,
-  });
+const listMessages = async (thread_id) => {
+  const response = await axios.get(`${BASE_URL}/threads/${thread_id}/messages`);
   return response.data;
 };
 
@@ -47,6 +51,7 @@ const confirmOrRejectToolRun = async (
 };
 
 export {
+  createAssistant,
   createConversation,
   pollConversation,
   continueConversation,
