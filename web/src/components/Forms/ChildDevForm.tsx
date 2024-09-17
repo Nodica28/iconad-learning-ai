@@ -18,15 +18,13 @@ import {
 import {
   createConversation,
   continueConversation,
-  listMessages,
   pollConversation,
 } from "../../api/conversationService";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import ChevronRightIcon from "@mui/icons-material/ChevronRight";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import axios from "axios";
 import formValues from "../../constants/formValues.json";
-import ReactMarkdown from "react-markdown";
+import LoadingSpinner from "../Loader/LoadingSpinner";
 
 const assistantId = import.meta.env.VITE_REACT_APP_ASSISTANT_ID;
 
@@ -40,6 +38,7 @@ const ChildDevelopmentForm: React.FC = () => {
   const [open, setOpen] = useState(false);
   const [threadId, setThreadId] = useState(null);
   const steps = formValues.map((section) => section.title);
+  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     checkStepCompletion();
@@ -85,6 +84,8 @@ const ChildDevelopmentForm: React.FC = () => {
   };
 
   const handleSubmit = async () => {
+    setIsLoading(true);
+
     const formattedAnswers = JSON.stringify(
       formValues.reduce(
         (acc, section, sectionIndex) => {
@@ -105,35 +106,37 @@ const ChildDevelopmentForm: React.FC = () => {
     try {
       const thread = await createConversation();
       setThreadId(thread.id);
+
+      if (!thread.id) {
+        throw new Error("Failed to retrieve thread ID");
+      }
+
       const message = { role: "user", content: formattedAnswers };
-      await continueConversation(threadId, message);
-      await pollConversation(assistantId, threadId);
+      await continueConversation(thread.id, message);
+      const response = await pollConversation(assistantId, thread.id);
 
-      handleListMessages();
-    } catch (error) {
-      console.error("Error submitting form:", error);
-    }
-  };
-
-  const handleListMessages = async () => {
-    if (!threadId) {
-      console.error("No conversation ID available");
-      return;
-    }
-
-    try {
-      const response = await listMessages(threadId);
-
-      const mappedMessages = response
+      const mappedMessages = response.data
         .filter((item) => item.role === "assistant")
-        .map((item) => ({
-          content: item.content[0].text.value,
-        }));
+        .map((item) => {
+          const rawContent = item.content[0].text.value;
+          const jsonString = rawContent.match(/```json\n([\s\S]*?)\n```/)?.[1];
+          if (jsonString) {
+            try {
+              const parsedContent = JSON.parse(jsonString);
+              return { content: parsedContent };
+            } catch (error) {
+              console.error("Error parsing JSON content:", error);
+            }
+          }
+          return { content: {} };
+        });
 
       setOpen(true);
       setSummary(mappedMessages);
     } catch (error) {
-      console.error("Error listing messages:", error);
+      console.error("Error submitting form:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -276,9 +279,19 @@ const ChildDevelopmentForm: React.FC = () => {
             onClick={
               activeStep === steps.length - 1 ? handleSubmit : handleNext
             }
-            disabled={!isStepComplete}
+            disabled={!isStepComplete || isLoading}
+            sx={{
+              paddingY: 1,
+              paddingX: 4,
+            }}
           >
-            {activeStep === steps.length - 1 ? "Submit" : "Next"}
+            {isLoading ? (
+              <LoadingSpinner />
+            ) : activeStep === steps.length - 1 ? (
+              "Submit"
+            ) : (
+              "Next"
+            )}
           </Button>
         </Box>
       </Box>
@@ -292,12 +305,16 @@ const ChildDevelopmentForm: React.FC = () => {
             p: 4,
             backgroundColor: "white",
             borderRadius: 2,
-            maxWidth: 600,
+            maxWidth: 800,
             margin: "auto",
             mt: 4,
+            display: "flex",
+            flexDirection: "column",
           }}
         >
-          <Typography variant="h6">Summary</Typography>
+          <Typography variant="h5" sx={{ mb: 3 }}>
+            Results:
+          </Typography>
           {summary &&
             summary.map((item, index) => (
               <Box
@@ -305,25 +322,38 @@ const ChildDevelopmentForm: React.FC = () => {
                 sx={{
                   backgroundColor: "#f0f0f0",
                   borderRadius: "10px",
-                  padding: "10px",
-                  marginBottom: "10px",
+                  padding: "20px",
+                  marginBottom: "20px",
                   overflowWrap: "break-word",
                   wordWrap: "break-word",
                   wordBreak: "break-word",
+                  textAlign: "center",
                 }}
               >
-                <ReactMarkdown
-                  components={{
-                    code: ({ children }) => (
-                      <code style={{ whiteSpace: "pre-wrap" }}>{children}</code>
-                    ),
+                <Typography variant="h6" sx={{ marginBottom: 1 }}>
+                  Hey, we found the best learning material for you!
+                </Typography>
+                <Button
+                  variant="contained"
+                  color="primary"
+                  onClick={() => {
+                    const url = item.content.content_link;
+                    if (url) {
+                      window.open(url, "_blank", "noopener,noreferrer");
+                    } else {
+                      console.error(
+                        "No valid link found in content:",
+                        item.content
+                      );
+                    }
                   }}
+                  sx={{ mt: 2, fontSize: 16 }}
                 >
-                  {item.content}
-                </ReactMarkdown>
+                  Click here to download!
+                </Button>
               </Box>
             ))}
-          <Button onClick={() => setOpen(false)} sx={{ mt: 2 }}>
+          <Button onClick={() => setOpen(false)} sx={{ mt: 2, fontSize: 16 }}>
             Close
           </Button>
         </Box>
