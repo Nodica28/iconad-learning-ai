@@ -4,15 +4,17 @@
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "node src/index.js",
-    "dev": "nodemon src/index.js"
+    "start": "node index.js",
+    "dev": "nodemon index.js",
+    "heroku-postbuild": "npm run build"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
   "engines": {
-    "node": "v22.2.x"
+    "node": "v22.2.x",
+    "npm": "10.8.x"
   },
   "dependencies": {
     "axios": "^1.7.7",
