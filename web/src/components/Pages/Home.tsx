@@ -4,7 +4,15 @@ import { Box } from "@mui/material";
 
 const Home = () => {
   return (
-    <Box sx={{ p: 10 }}>
+    <Box
+      sx={{
+        p: {
+          sm: 2,
+          md: 5,
+          lg: 10,
+        },
+      }}
+    >
       <ChildDevelopmentForm />
     </Box>
   );

@@ -146,7 +146,16 @@ const ChildDevelopmentForm: React.FC = () => {
 
     return (
       <>
-        <Typography variant="h6" sx={{ marginBottom: 2 }}>
+        <Typography
+          sx={{
+            marginBottom: 2,
+            fontSize: {
+              xs: "1.2rem",
+              sm: "1.3rem",
+              md: "1.6rem",
+            },
+          }}
+        >
           {currentSection.title}
         </Typography>
         {currentSection.questions.map((question, index) => (
@@ -157,7 +166,18 @@ const ChildDevelopmentForm: React.FC = () => {
             }}
           >
             <FormControl component="fieldset" fullWidth>
-              <FormLabel component="legend">{question.question}</FormLabel>
+              <FormLabel
+                component="legend"
+                sx={{
+                  fontSize: {
+                    xs: "1rem",
+                    sm: "1.1rem",
+                    md: "1.3rem",
+                  },
+                }}
+              >
+                {question.question}
+              </FormLabel>
               <RadioGroup
                 name={`question_${step}_${index}`}
                 value={answers[`question_${step}_${index}`] || ""}
@@ -173,7 +193,19 @@ const ChildDevelopmentForm: React.FC = () => {
                     key={option.value}
                     value={option.value}
                     control={<Radio />}
-                    label={option.label}
+                    label={
+                      <Typography
+                        sx={{
+                          fontSize: {
+                            xs: ".9rem",
+                            sm: "1rem",
+                            md: "1.1rem",
+                          },
+                        }}
+                      >
+                        {option.label}
+                      </Typography>
+                    }
                   />
                 ))}
               </RadioGroup>
@@ -208,9 +240,27 @@ const ChildDevelopmentForm: React.FC = () => {
   return (
     <Paper
       elevation={2}
-      sx={{ p: 4, border: "2px solid #e0e0e0", borderRadius: 2 }}
+      sx={{
+        p: {
+          xs: 2,
+          sm: 4,
+          md: 6,
+        },
+        border: "2px solid #e0e0e0",
+        borderRadius: 2,
+      }}
     >
-      <Typography variant="h4" sx={{ marginBottom: 2 }}>
+      <Typography
+        sx={{
+          marginBottom: 2,
+          fontSize: {
+            sm: "1.25rem",
+            md: "1.5rem",
+            lg: "2rem",
+          },
+          fontWeight: "bold",
+        }}
+      >
         Child Development Form
       </Typography>
       <Box sx={{ display: "flex", alignItems: "center", marginBottom: 2 }}>
@@ -254,7 +304,17 @@ const ChildDevelopmentForm: React.FC = () => {
                     </Box>
                   )}
                 >
-                  {label}
+                  <Typography
+                    sx={{
+                      fontSize: {
+                        xs: "0.6875rem",
+                        sm: "0.875rem",
+                        md: "1rem",
+                      },
+                    }}
+                  >
+                    {label}
+                  </Typography>
                 </StepLabel>
               </Step>
             );
@@ -298,64 +358,98 @@ const ChildDevelopmentForm: React.FC = () => {
       <Modal
         open={open}
         onClose={() => setOpen(false)}
-        sx={{ overflow: "scroll" }}
+        sx={{
+          overflow: "scroll",
+        }}
       >
         <Box
           sx={{
-            p: 4,
-            backgroundColor: "white",
-            borderRadius: 2,
-            maxWidth: 800,
-            margin: "auto",
-            mt: 4,
             display: "flex",
-            flexDirection: "column",
+            alignItems: "center",
+            justifyContent: "center",
+            height: "100%",
           }}
         >
-          <Typography variant="h5" sx={{ mb: 3 }}>
-            Results:
-          </Typography>
-          {summary &&
-            summary.map((item, index) => (
-              <Box
-                key={index}
-                sx={{
-                  backgroundColor: "#f0f0f0",
-                  borderRadius: "10px",
-                  padding: "20px",
-                  marginBottom: "20px",
-                  overflowWrap: "break-word",
-                  wordWrap: "break-word",
-                  wordBreak: "break-word",
-                  textAlign: "center",
-                }}
-              >
-                <Typography variant="h6" sx={{ marginBottom: 1 }}>
-                  Hey, we found the best learning material for you!
-                </Typography>
-                <Button
-                  variant="contained"
-                  color="primary"
-                  onClick={() => {
-                    const url = item.content.content_link;
-                    if (url) {
-                      window.open(url, "_blank", "noopener,noreferrer");
-                    } else {
-                      console.error(
-                        "No valid link found in content:",
-                        item.content
-                      );
-                    }
+          <Box
+            sx={{
+              p: 4,
+              backgroundColor: "white",
+              borderRadius: 2,
+              maxWidth: "80%",
+              mt: 4,
+              display: "flex",
+              flexDirection: "column",
+            }}
+          >
+            <Typography
+              sx={{
+                mb: 3,
+                fontSize: {
+                  xs: "1.25rem",
+                  sm: "1.5rem",
+                  md: "1.8rem",
+                },
+              }}
+            >
+              Results:
+            </Typography>
+            {summary &&
+              summary.map((item, index) => (
+                <Box
+                  key={index}
+                  sx={{
+                    backgroundColor: "#f0f0f0",
+                    borderRadius: "10px",
+                    padding: "20px",
+                    marginBottom: "20px",
+                    overflowWrap: "break-word",
+                    wordWrap: "break-word",
+                    wordBreak: "break-word",
+                    textAlign: "center",
                   }}
-                  sx={{ mt: 2, fontSize: 16 }}
                 >
-                  Click here to download!
-                </Button>
-              </Box>
-            ))}
-          <Button onClick={() => setOpen(false)} sx={{ mt: 2, fontSize: 16 }}>
-            Close
-          </Button>
+                  <Typography
+                    sx={{
+                      marginBottom: 1,
+                      fontSize: {
+                        xs: "1rem",
+                        sm: "1.2rem",
+                        md: "1.3rem",
+                      },
+                    }}
+                  >
+                    Hey, we found the best learning material for you!
+                  </Typography>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    onClick={() => {
+                      const url = item.content.content_link;
+                      if (url) {
+                        window.open(url, "_blank", "noopener,noreferrer");
+                      } else {
+                        console.error(
+                          "No valid link found in content:",
+                          item.content
+                        );
+                      }
+                    }}
+                    sx={{
+                      mt: 2,
+                      fontSize: {
+                        xs: ".8rem",
+                        sm: "1rem",
+                      },
+                    }}
+                  >
+                    Click here to download!
+                  </Button>
+                </Box>
+              ))}
+            <Button onClick={() => setOpen(false)} sx={{ mt: 2, fontSize: 16 }}>
+              Close
+            </Button>
+          </Box>
         </Box>
       </Modal>
     </Paper>
