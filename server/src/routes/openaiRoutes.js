@@ -6,7 +6,7 @@ const {
   createMessage,
   listMessages,
   createAndPoll,
-} = require("../controllers/openAIConversationController");
+} = require("../controllers/openaiConversationController");
 
 const router = express.Router();
 
