@@ -1,6 +1,9 @@
 import axios from "axios";
 
-const BASE_URL = "http://localhost:5000/api/conversation";
+const BASE_URL =
+  import.meta.env.VITE_REACT_APP_ENV === "development"
+    ? "http://localhost:5000/api/conversation"
+    : "";
 
 const createAssistant = async (assistant_id) => {
   const response = await axios.get(`${BASE_URL}/assistant/${assistant_id}`);
