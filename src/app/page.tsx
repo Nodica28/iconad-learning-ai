@@ -282,7 +282,7 @@ export default function Home() {
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
           <div className="relative p-8 bg-white rounded-lg max-w-lg mx-auto">
             <h2 className="text-xl md:text-2xl mb-4">Results:</h2>
-            {summary &&
+            {summary && summary.length > 0 ? (
               summary.map((item, index) => (
                 <div
                   key={index}
@@ -313,7 +313,14 @@ export default function Home() {
                     Click here to download!
                   </button>
                 </div>
-              ))}
+              ))
+            ) : (
+              <div className="bg-red-100 p-4 mb-4 rounded-lg text-center">
+                <p className="text-lg md:text-xl text-gray-700">
+                  No learning materials found.
+                </p>
+              </div>
+            )}
             <div className="w-full justify-center flex">
               <button
                 onClick={() => setOpen(false)}
