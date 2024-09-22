@@ -39,7 +39,7 @@ export default function Home() {
     if (!currentSection) return;
 
     const allQuestionsAnswered = currentSection.questions.every(
-      (question, questionIndex) =>
+      (_question, questionIndex) =>
         answers[`question_${activeStep}_${questionIndex}`]
     );
 
@@ -195,7 +195,7 @@ export default function Home() {
     const section = formValues[stepIndex];
 
     return section.questions.every(
-      (question, questionIndex) =>
+      (_question, questionIndex) =>
         answers[`question_${stepIndex}_${questionIndex}`]
     );
   };
