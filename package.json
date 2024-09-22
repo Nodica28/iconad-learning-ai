@@ -21,6 +21,10 @@
       "path": "./node_modules/cz-git"
     }
   },
+  "engines": {
+    "node": "v22.2.x",
+    "npm": "10.8.x"
+  },
   "dependencies": {
     "@emotion/react": "^11.13.3",
     "@emotion/styled": "^11.13.0",
