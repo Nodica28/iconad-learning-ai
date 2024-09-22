@@ -2,8 +2,6 @@ import { NextResponse } from "next/server";
 
 export async function GET() {
   try {
-    console.log("Test");
-
     return NextResponse.json(
       { status: "ok", message: "It works! =)" },
       { status: 200 }

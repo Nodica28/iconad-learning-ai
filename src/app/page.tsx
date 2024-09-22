@@ -151,7 +151,7 @@ export default function Home() {
             <RadioGroup
               name={`question_${step}_${index}`}
               value={answers[`question_${step}_${index}`] || ""}
-              onValueChange={(value) =>
+              onValueChange={(value: string) =>
                 handleAnswerChange(`question_${step}_${index}`, value)
               }
               className="mt-2"

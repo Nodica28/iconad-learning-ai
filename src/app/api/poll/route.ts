@@ -5,7 +5,7 @@ export async function POST(req: NextRequest) {
   try {
     const { thread_id, assistant_id } = await req.json();
 
-    let run = await openai.beta.threads.runs.createAndPoll(thread_id, {
+    const run = await openai.beta.threads.runs.createAndPoll(thread_id, {
       assistant_id: assistant_id,
     });
 
