@@ -1,0 +1,6 @@
+node_modules/
+dist/
+# Remove or modify specific patterns that shouldn't apply
+# *.js
+# *.jsx
+# *.d.ts
