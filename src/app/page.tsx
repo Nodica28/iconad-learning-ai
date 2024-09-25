@@ -80,6 +80,7 @@ export default function Home() {
   };
 
   const handleSubmit = async () => {
+    const role = "user";
     setIsLoading(true);
 
     const formattedAnswers = JSON.stringify(
@@ -107,7 +108,7 @@ export default function Home() {
       }
 
       const message = { role: "user", content: formattedAnswers };
-      await continueConversation(thread.id, message);
+      await continueConversation(thread.id, role, message);
 
       const response = await pollConversation(assistantId, thread.id);
       const mappedMessages = response.data
