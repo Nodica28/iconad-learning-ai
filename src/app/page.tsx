@@ -48,7 +48,7 @@ export default function Home() {
 
   useEffect(() => {
     checkStepCompletion();
-  }, [activeStep, answers]);
+  }, [activeStep, answers, checkStepCompletion]);
 
   const handleNext = () => {
     setActiveStep((prevActiveStep) => {
