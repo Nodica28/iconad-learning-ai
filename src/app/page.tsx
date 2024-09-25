@@ -48,7 +48,8 @@ export default function Home() {
 
   useEffect(() => {
     checkStepCompletion();
-  }, [activeStep, answers, checkStepCompletion]);
+    //eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeStep, answers]);
 
   const handleNext = () => {
     setActiveStep((prevActiveStep) => {
