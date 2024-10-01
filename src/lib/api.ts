@@ -71,3 +71,36 @@ export const pollConversation = async (
   }
   return res.json();
 };
+
+export const fileUpload = async (fileData: FormData) => {
+  const fileSizeLimit = 5 * 1024 * 1024; // 5MB size limit
+
+  // Find file entry in formData
+  const fileEntry = Array.from(fileData.entries()).find(
+    ([key]) => key === "file"
+  );
+
+  if (
+    fileEntry &&
+    fileEntry[1] instanceof File &&
+    fileEntry[1].size > fileSizeLimit
+  ) {
+    throw new Error(
+      "File size exceeds 5MB limit. Please choose a smaller file."
+    );
+  }
+
+  const res = await fetch(`/api/upload`, {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+    },
+    body: fileData,
+  });
+
+  if (!res.ok) {
+    throw new Error("Failed to upload the file.");
+  }
+
+  return res.json();
+};
