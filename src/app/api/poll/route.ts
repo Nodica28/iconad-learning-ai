@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import openai from "@/lib/openai";
+import { saveConversation } from "@/lib/saveMessage";
 
 export async function POST(req: NextRequest) {
   try {
@@ -11,6 +12,19 @@ export async function POST(req: NextRequest) {
 
     if (run.status === "completed") {
       const messages = await openai.beta.threads.messages.list(run.thread_id);
+
+      if (
+        messages.data &&
+        messages.data[0] &&
+        "text" in messages.data[0].content[0]
+      ) {
+        console.log("Saving assistant message...");
+        await saveConversation(thread_id, {
+          content: messages.data[0].content[0].text.value,
+          role: "assistant",
+        });
+      }
+
       return NextResponse.json(messages);
     } else {
       return NextResponse.json({ status: run.status }, { status: 202 });
