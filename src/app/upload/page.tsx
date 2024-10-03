@@ -99,9 +99,7 @@ export default function AIFileUpload() {
           {response ? (
             <div className="p-2 rounded-lg bg-green-100 w-full">
               <p className="font-semibold">AI:</p>
-              <pre className="whitespace-pre-wrap break-words">
-                {JSON.stringify(response, null, 2)}
-              </pre>
+              <pre className="whitespace-pre-wrap break-words">{response}</pre>
             </div>
           ) : (
             "No response yet."
