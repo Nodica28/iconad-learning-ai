@@ -53,10 +53,9 @@ export default function Chatbox() {
     setIsLoading(true); // Set loading state to true
 
     await continueConversation(threadId, role, userMessage.text);
-    const response = await pollConversation(assistantId, threadId);
+    await pollConversation(assistantId, threadId);
 
     const updatedMessages = await listMessages(threadId);
-    console.log(response);
 
     const mappedMessages = updatedMessages
       .map(
