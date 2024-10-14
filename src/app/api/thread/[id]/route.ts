@@ -8,19 +8,19 @@ export async function POST(req: NextRequest) {
     const pathname = url.pathname;
     const threadId = pathname.split("/").pop();
 
-    const { messages, role } = await req.json();
+    const { messages } = await req.json();
 
     if (!threadId) {
       throw new Error("Thread ID is required");
     }
 
     console.log("Saving user message...");
-    await saveConversation(threadId, { content: messages, role });
+    await saveConversation(threadId, messages);
 
-    const threadMessages = await openai.beta.threads.messages.create(threadId, {
-      role,
-      content: messages,
-    });
+    const threadMessages = await openai.beta.threads.messages.create(
+      threadId,
+      messages
+    );
 
     return NextResponse.json(threadMessages);
   } catch (error: any) {
