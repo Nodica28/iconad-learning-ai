@@ -61,14 +61,14 @@ export const createConversation = async () => {
 export const continueConversation = async (
   threadId: string,
   role: string,
-  messages: any
+  content: any
 ) => {
   const res = await fetch(`/api/thread/${threadId}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ threadId, role, messages }),
+    body: JSON.stringify({ threadId, role, content }),
   });
   if (!res.ok) {
     throw new Error("Failed to continue the conversation.");
@@ -102,6 +102,20 @@ export const pollConversation = async (
   });
   if (!res.ok) {
     throw new Error("Failed to poll the conversation.");
+  }
+  return res.json();
+};
+
+export const saveProgress = async (email: string, progress: string) => {
+  const res = await fetch(`/api/progress`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ email, progress }),
+  });
+  if (!res.ok) {
+    throw new Error("Failed to save progress.");
   }
   return res.json();
 };
