@@ -11,18 +11,20 @@ import { ChevronRight, ChevronLeft, CircleCheck } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
+import { useRouter } from "next/navigation";
 
 const assistantId =
   process.env.NEXT_PUBLIC_APP_ASSISTANT_ID || "default_assistant_id";
 
 export default function Home() {
+  const router = useRouter();
   const [activeStep, setActiveStep] = useState(0);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [isStepComplete, setIsStepComplete] = useState(false);
   const [visibleStart, setVisibleStart] = useState(0);
   const [visibleEnd, setVisibleEnd] = useState(5);
   const [summary, setSummary] = useState<Array<{ content: string }>>([]);
-  const [open, setOpen] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
   const steps = formValues.map((section) => section.title);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -128,7 +130,7 @@ export default function Home() {
           return { content: {} };
         });
 
-      setOpen(true);
+      setSubmitted(true);
       setSummary(mappedMessages);
     } catch (error) {
       console.error("Error submitting form:", error);
@@ -200,6 +202,10 @@ export default function Home() {
       (_question, questionIndex) =>
         answers[`question_${stepIndex}_${questionIndex}`]
     );
+  };
+
+  const handleProceedToAI = () => {
+    router.push("/conversation");
   };
 
   return (
@@ -280,7 +286,7 @@ export default function Home() {
           )}
         </button>
       </div>
-      {open && (
+      {submitted && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
           <div className="relative p-8 bg-white rounded-lg max-w-lg mx-auto">
             <h2 className="text-xl md:text-2xl mb-4">Results:</h2>
@@ -293,27 +299,35 @@ export default function Home() {
                   <p className="mb-2 text-lg md:text-xl">
                     Hey, we found the best learning material for you!
                   </p>
-                  <button
-                    onClick={() => {
-                      const content =
-                        typeof item.content === "object" &&
-                        item.content !== null
-                          ? (item.content as Content)
-                          : {};
-                      const url = content.content_link;
-                      if (url) {
-                        window.open(url, "_blank", "noopener,noreferrer");
-                      } else {
-                        console.error(
-                          "No valid link found in content:",
-                          item.content
-                        );
-                      }
-                    }}
-                    className="mt-2 py-2 px-4 bg-blue-600 text-white rounded-lg text-sm md:text-base"
-                  >
-                    Click here to download!
-                  </button>
+                  <div className="flex gap-4">
+                    <button
+                      onClick={() => {
+                        const content =
+                          typeof item.content === "object" &&
+                          item.content !== null
+                            ? (item.content as Content)
+                            : {};
+                        const url = content.content_link;
+                        if (url) {
+                          window.location.href = url;
+                        } else {
+                          console.error(
+                            "No valid link found in content:",
+                            item.content
+                          );
+                        }
+                      }}
+                      className="mt-2 py-2 px-4 bg-blue-600 text-white rounded-lg text-sm md:text-base"
+                    >
+                      Click here to download!
+                    </button>
+                    <button
+                      className="mt-2 py-2 px-4 border-gray-600 border-2 rounded-lg text-sm md:text-base"
+                      onClick={handleProceedToAI}
+                    >
+                      Proceed to AI Assistant
+                    </button>
+                  </div>
                 </div>
               ))
             ) : (
@@ -325,7 +339,7 @@ export default function Home() {
             )}
             <div className="w-full justify-center flex">
               <button
-                onClick={() => setOpen(false)}
+                onClick={() => setSubmitted(false)}
                 className="mt-4 py-2 px-4 bg-gray-200 text-gray-700 rounded-lg"
               >
                 Close
