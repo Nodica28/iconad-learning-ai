@@ -1,3 +1,37 @@
+export const registerUser = async (email: string) => {
+  const res = await fetch(`/api/user/register`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ email }),
+  });
+
+  if (!res.ok) {
+    const errorData = await res.json();
+    const errorMessage = errorData.error || "Failed to register.";
+    throw new Error(errorMessage);
+  }
+
+  return res.json();
+};
+
+export const loginUser = async (email: string) => {
+  const res = await fetch(`/api/user/login`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ email }),
+  });
+
+  if (!res.ok) {
+    throw new Error("Failed to login.");
+  }
+
+  return res.json();
+};
+
 export const createAssistant = async (
   instructions: string,
   name: string,
