@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Spinner } from "@/components/ui/spinner";
+import { saveProgress } from "@/lib/api";
 
 interface Message {
   id: number;
@@ -33,6 +34,29 @@ export default function Chatbox() {
     setIsCreatedConversation(false);
     const thread = await createConversation();
     setThreadId(thread.id);
+    const initialMessage = "Hello! How can I assist you today?";
+
+    await continueConversation(thread.id, "assistant", initialMessage);
+    await pollConversation(assistantId, thread.id);
+
+    const updatedMessages = await listMessages(thread.id);
+
+    const mappedMessages = updatedMessages
+      .map(
+        (item: {
+          id: any;
+          role: any;
+          content: { text: { value: any } }[];
+        }) => ({
+          id: item.id,
+          text: item.content[0].text.value,
+          sender: item.role === "user" ? "user" : "assistant",
+        })
+      )
+      .reverse();
+
+    setMessages(mappedMessages);
+
     setIsCreatedConversation(true);
   };
 
@@ -50,10 +74,15 @@ export default function Chatbox() {
 
     const role = "user";
 
+    const email = localStorage.getItem("user")
+      ? JSON.parse(localStorage.getItem("user")!).email || ""
+      : "";
+
     setIsLoading(true); // Set loading state to true
 
     await continueConversation(threadId, role, userMessage.text);
     await pollConversation(assistantId, threadId);
+    saveProgress(email, userMessage.text);
 
     const updatedMessages = await listMessages(threadId);
 

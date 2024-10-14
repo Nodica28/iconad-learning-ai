@@ -110,8 +110,7 @@ export default function Home() {
         throw new Error("Failed to retrieve thread ID");
       }
 
-      const message = { role: "user", content: formattedAnswers };
-      await continueConversation(thread.id, role, message);
+      await continueConversation(thread.id, role, formattedAnswers);
 
       const response = await pollConversation(assistantId, thread.id);
       const mappedMessages = response.data

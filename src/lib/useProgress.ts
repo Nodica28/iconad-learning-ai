@@ -1,10 +1,6 @@
 import clientPromise from "@/lib/mongodb";
 
-interface Progress {
-  // Define the structure to store progress information
-}
-
-export const saveProgress = async (email: string, progress: Progress) => {
+export const saveProgress = async (email: string, progress: string) => {
   try {
     const client = await clientPromise;
     const db = client.db("userDB");
