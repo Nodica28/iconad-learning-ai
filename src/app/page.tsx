@@ -29,7 +29,7 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
 
   interface Content {
-    content_link?: string;
+    content_link?: string[];
   }
 
   interface Answer {
@@ -207,6 +207,49 @@ export default function Home() {
     router.push("/conversation");
   };
 
+  const handleDownloadAll = async (downloadLinks: string[]) => {
+    if (!downloadLinks || downloadLinks.length === 0) {
+      return; // Exit if the array is undefined or empty
+    }
+
+    alert("Please ensure pop-ups are allowed to download all files.");
+
+    for (const link of downloadLinks) {
+      const isImage = [
+        "png",
+        "svg",
+        "jpg",
+        "jpeg",
+        "gif",
+        "bmp",
+        "webp",
+        "tiff",
+        "ico",
+        "heic",
+        "avif",
+      ].some((ext) => link.toLowerCase().endsWith(ext));
+
+      if (isImage) {
+        try {
+          const response = await fetch(link);
+          const blob = await response.blob();
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement("a");
+          a.href = url;
+          a.download = link.split("/").pop() || "download";
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+          URL.revokeObjectURL(url);
+        } catch (error) {
+          console.error("Error downloading image:", error);
+        }
+      } else {
+        window.open(link, "_blank", "noopener,noreferrer");
+      }
+    }
+  };
+
   return (
     <div className="p-6 md:p-12 border-2 border-gray-300 rounded-2xl shadow-md">
       <h1 className="text-xl md:text-3xl font-bold mb-4">
@@ -290,45 +333,34 @@ export default function Home() {
           <div className="relative p-8 bg-white rounded-lg max-w-lg mx-auto">
             <h2 className="text-xl md:text-2xl mb-4">Results:</h2>
             {summary && summary.length > 0 ? (
-              summary.map((item, index) => (
-                <div
-                  key={index}
-                  className="bg-gray-100 p-4 mb-4 rounded-lg text-center"
-                >
-                  <p className="mb-2 text-lg md:text-xl">
-                    Hey, we found the best learning material for you!
-                  </p>
-                  <div className="flex gap-4">
+              summary.map((item, index) => {
+                const content =
+                  typeof item.content === "object" && item.content !== null
+                    ? (item.content as Content)
+                    : {};
+                const downloadLinks = content.content_link;
+
+                return (
+                  <div
+                    key={index}
+                    className="bg-gray-100 p-4 mb-4 rounded-lg text-center"
+                  >
+                    <p className="mb-2 text-lg md:text-xl">
+                      Hey, we found the best learning materials for you!
+                    </p>
                     <button
                       onClick={() => {
-                        const content =
-                          typeof item.content === "object" &&
-                          item.content !== null
-                            ? (item.content as Content)
-                            : {};
-                        const url = content.content_link;
-                        if (url) {
-                          window.location.href = url;
-                        } else {
-                          console.error(
-                            "No valid link found in content:",
-                            item.content
-                          );
+                        if (Array.isArray(downloadLinks)) {
+                          handleDownloadAll(downloadLinks);
                         }
                       }}
                       className="mt-2 py-2 px-4 bg-blue-600 text-white rounded-lg text-sm md:text-base"
                     >
-                      Click here to download!
-                    </button>
-                    <button
-                      className="mt-2 py-2 px-4 border-gray-600 border-2 rounded-lg text-sm md:text-base"
-                      onClick={handleProceedToAI}
-                    >
-                      Proceed to AI Assistant
+                      Download All
                     </button>
                   </div>
-                </div>
-              ))
+                );
+              })
             ) : (
               <div className="bg-red-100 p-4 mb-4 rounded-lg text-center">
                 <p className="text-lg md:text-xl text-gray-700">
@@ -336,10 +368,17 @@ export default function Home() {
                 </p>
               </div>
             )}
-            <div className="w-full justify-center flex">
+
+            <div className="w-full justify-center flex mt-4">
+              <button
+                className="mt-2 py-2 px-4 border-gray-600 border-2 rounded-lg text-sm md:text-base"
+                onClick={handleProceedToAI}
+              >
+                Proceed to AI Assistant
+              </button>
               <button
                 onClick={() => setSubmitted(false)}
-                className="mt-4 py-2 px-4 bg-gray-200 text-gray-700 rounded-lg"
+                className="ml-4 mt-2 py-2 px-4 bg-gray-200 text-gray-700 rounded-lg"
               >
                 Close
               </button>
