@@ -1,0 +1,11 @@
+import { NextResponse } from "next/server";
+import openai from "@/lib/openai";
+
+export async function POST() {
+  try {
+    const messageThread = await openai.beta.threads.create();
+    return NextResponse.json(messageThread);
+  } catch (error: any) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+}
