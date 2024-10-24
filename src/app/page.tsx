@@ -12,6 +12,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { useRouter } from "next/navigation";
+import { saveMatches } from "@/lib/api";
 
 const assistantId =
   process.env.NEXT_PUBLIC_APP_ASSISTANT_ID || "default_assistant_id";
@@ -23,13 +24,13 @@ export default function Home() {
   const [isStepComplete, setIsStepComplete] = useState(false);
   const [visibleStart, setVisibleStart] = useState(0);
   const [visibleEnd, setVisibleEnd] = useState(5);
-  const [summary, setSummary] = useState<Array<{ content: string }>>([]);
+  const [summary, setSummary] = useState<Message[]>([]);
   const [submitted, setSubmitted] = useState(false);
   const steps = formValues.map((section) => section.title);
   const [isLoading, setIsLoading] = useState(false);
 
-  interface Content {
-    content_link?: string[];
+  interface Message {
+    content_links: string[];
   }
 
   interface Answer {
@@ -113,21 +114,33 @@ export default function Home() {
       await continueConversation(thread.id, role, formattedAnswers);
 
       const response = await pollConversation(assistantId, thread.id);
-      const mappedMessages = response.data
-        .filter((item: { role: string }) => item.role === "assistant")
-        .map((item: { content: { text: { value: any } }[] }) => {
-          const rawContent = item.content[0].text.value;
-          const jsonString = rawContent.match(/```json\n([\s\S]*?)\n```/)?.[1];
-          if (jsonString) {
-            try {
-              const parsedContent = JSON.parse(jsonString);
-              return { content: parsedContent };
-            } catch (error) {
-              console.error("Error parsing JSON content:", error);
+      const assistantResponses = response.data.filter(
+        (item: { role: string }) => item.role === "assistant"
+      );
+
+      const mappedMessages = await Promise.all(
+        assistantResponses.map(
+          async (item: { content: { text: { value: any } }[] }) => {
+            const rawContent = item.content[0].text.value;
+            const jsonString = rawContent.match(
+              /```json\n([\s\S]*?)\n```/
+            )?.[1];
+            if (jsonString) {
+              try {
+                const parsedContent = JSON.parse(jsonString);
+                const contentLinks = parsedContent.matches.map(
+                  (match: { content_link: string }) => match.content_link
+                );
+                await saveMatches(parsedContent.matches);
+                return { content_links: contentLinks };
+              } catch (error) {
+                console.error("Error parsing JSON content:", error);
+              }
             }
+            return { content_links: [] };
           }
-          return { content: {} };
-        });
+        )
+      );
 
       setSubmitted(true);
       setSummary(mappedMessages);
@@ -334,12 +347,7 @@ export default function Home() {
             <h2 className="text-xl md:text-2xl mb-4">Results:</h2>
             {summary && summary.length > 0 ? (
               summary.map((item, index) => {
-                const content =
-                  typeof item.content === "object" && item.content !== null
-                    ? (item.content as Content)
-                    : {};
-                const downloadLinks = content.content_link;
-
+                const contentLinks = item.content_links;
                 return (
                   <div
                     key={index}
@@ -350,8 +358,8 @@ export default function Home() {
                     </p>
                     <button
                       onClick={() => {
-                        if (Array.isArray(downloadLinks)) {
-                          handleDownloadAll(downloadLinks);
+                        if (Array.isArray(contentLinks)) {
+                          handleDownloadAll(contentLinks);
                         }
                       }}
                       className="mt-2 py-2 px-4 bg-blue-600 text-white rounded-lg text-sm md:text-base"

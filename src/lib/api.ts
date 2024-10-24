@@ -32,6 +32,32 @@ export const loginUser = async (email: string) => {
   return res.json();
 };
 
+export const getUserData = async () => {
+  const user = localStorage.getItem("user");
+  if (!user) {
+    throw new Error("No user found in localStorage.");
+  }
+
+  const { email } = JSON.parse(user);
+
+  if (!email || typeof email !== "string" || email.trim() === "") {
+    throw new Error("Email is not a valid string.");
+  }
+  const res = await fetch(`/api/user/info`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ email }),
+  });
+
+  if (!res.ok) {
+    throw new Error("Failed to get user data.");
+  }
+
+  return res.json();
+};
+
 export const createAssistant = async (
   instructions: string,
   name: string,
@@ -63,12 +89,22 @@ export const continueConversation = async (
   role: string,
   content: any
 ) => {
+  const user = localStorage.getItem("user");
+  if (!user) {
+    throw new Error("No user found in localStorage.");
+  }
+
+  const { email } = JSON.parse(user);
+
+  if (!email || typeof email !== "string" || email.trim() === "") {
+    throw new Error("Email is not a valid string.");
+  }
   const res = await fetch(`/api/thread/${threadId}`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ threadId, role, content }),
+    body: JSON.stringify({ threadId, role, content, email }),
   });
   if (!res.ok) {
     throw new Error("Failed to continue the conversation.");
@@ -93,12 +129,26 @@ export const pollConversation = async (
   assistantId: string,
   threadId: string
 ) => {
+  const user = localStorage.getItem("user");
+  if (!user) {
+    throw new Error("No user found in localStorage.");
+  }
+
+  const { email } = JSON.parse(user);
+
+  if (!email || typeof email !== "string" || email.trim() === "") {
+    throw new Error("Email is not a valid string.");
+  }
   const res = await fetch(`/api/poll`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ assistant_id: assistantId, thread_id: threadId }),
+    body: JSON.stringify({
+      assistant_id: assistantId,
+      thread_id: threadId,
+      email,
+    }),
   });
   if (!res.ok) {
     throw new Error("Failed to poll the conversation.");
@@ -113,6 +163,30 @@ export const saveProgress = async (email: string, progress: string) => {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({ email, progress }),
+  });
+  if (!res.ok) {
+    throw new Error("Failed to save progress.");
+  }
+  return res.json();
+};
+
+export const saveMatches = async (matches: object) => {
+  const user = localStorage.getItem("user");
+  if (!user) {
+    throw new Error("No user found in localStorage.");
+  }
+
+  const { email } = JSON.parse(user);
+
+  if (!email || typeof email !== "string" || email.trim() === "") {
+    throw new Error("Email is not a valid string.");
+  }
+  const res = await fetch(`/api/matches`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ email, matches }),
   });
   if (!res.ok) {
     throw new Error("Failed to save progress.");

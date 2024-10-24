@@ -41,29 +41,31 @@ export default function LoginPage() {
     try {
       const response = await loginUser(email);
 
-      if (response.authenticated) {
-        localStorage.setItem("user", JSON.stringify(response));
-
-        setSuccess("Login successful!");
-        toast({
-          title: "Login successful.",
-          description: "Redirecting to AI Agent.",
-        });
-
-        setTimeout(() => {
-          router.push("/conversation");
-        }, 3000);
-      } else {
+      if (!response.authenticated) {
         setError("Email not found.");
         toast({
           title: "Login failed.",
           description: "Please check your email and try again.",
         });
+        return;
       }
+
+      localStorage.setItem("user", JSON.stringify(response));
+
+      setSuccess("Login successful!");
+      toast({
+        title: "Login successful.",
+        description: "Redirecting please wait.",
+      });
+
+      const redirectPath = response.matches?.length > 0 ? "/conversation" : "/";
+      setTimeout(() => {
+        router.push(redirectPath);
+      }, 3000);
     } catch (error: any) {
       setError("Login failed.");
       toast({
-        title: "Registration failed.",
+        title: "Login failed.",
         description: error.message || "An error occurred.",
       });
     }
