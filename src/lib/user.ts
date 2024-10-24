@@ -41,3 +41,22 @@ export const register = async (email: string): Promise<void> => {
     throw error;
   }
 };
+
+export const retrieveInfo = async (email: string) => {
+  try {
+    const client = await clientPromise;
+    const db = client.db("userDB");
+    const collection = db.collection("users");
+
+    const userInfo = await collection.findOne({ email });
+
+    if (!userInfo) {
+      throw new Error("User not found.");
+    }
+
+    return userInfo;
+  } catch (error) {
+    console.error("Error retrieving user information:", error);
+    throw error;
+  }
+};

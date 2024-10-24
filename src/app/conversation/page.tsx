@@ -12,6 +12,7 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Spinner } from "@/components/ui/spinner";
 import { saveProgress } from "@/lib/api";
+import { getUserData } from "../../lib/api";
 
 interface Message {
   id: number;
@@ -32,9 +33,13 @@ export default function Chatbox() {
 
   const handleCreateConversation = async () => {
     setIsCreatedConversation(false);
+
+    const response = await getUserData();
+
     const thread = await createConversation();
     setThreadId(thread.id);
-    const initialMessage = "Hello! How can I assist you today?";
+
+    const initialMessage = `Hello! How can I assist you today? Here's some context: ${response.last_progress || "No recent activity."}. Matches: ${response.matches.map((match: { content_time_factor: any; content_tag: any }) => `Time Factor: ${match.content_time_factor}, Tag: ${match.content_tag}`).join(", ")}`;
 
     await continueConversation(thread.id, "assistant", initialMessage);
     await pollConversation(assistantId, thread.id);
@@ -53,8 +58,8 @@ export default function Chatbox() {
           sender: item.role === "user" ? "user" : "assistant",
         })
       )
-      .reverse();
-
+      .reverse()
+      .slice(1);
     setMessages(mappedMessages);
 
     setIsCreatedConversation(true);
@@ -98,7 +103,8 @@ export default function Chatbox() {
           sender: item.role === "user" ? "user" : "assistant",
         })
       )
-      .reverse();
+      .reverse()
+      .slice(1);
 
     setMessages(mappedMessages);
     setIsLoading(false); // Set loading state to false

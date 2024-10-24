@@ -4,7 +4,7 @@ import { saveConversation } from "@/lib/saveMessage";
 
 export async function POST(req: NextRequest) {
   try {
-    const { thread_id, assistant_id } = await req.json();
+    const { thread_id, assistant_id, email } = await req.json();
 
     const run = await openai.beta.threads.runs.createAndPoll(thread_id, {
       assistant_id: assistant_id,
@@ -19,10 +19,14 @@ export async function POST(req: NextRequest) {
         "text" in messages.data[0].content[0]
       ) {
         console.log("Saving assistant message...");
-        await saveConversation(thread_id, {
-          content: messages.data[0].content[0].text.value,
-          role: "assistant",
-        });
+        await saveConversation(
+          thread_id,
+          {
+            content: messages.data[0].content[0].text.value,
+            role: "assistant",
+          },
+          email
+        );
       }
 
       return NextResponse.json(messages);
