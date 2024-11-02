@@ -25,14 +25,17 @@ export default function Chatbox() {
   const [threadId, setThreadId] = useState<string>("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState<string>("");
-  const [isCreatedConversation, setIsCreatedConversation] =
-    useState<boolean>(true);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isInitializing, setIsInitializing] = useState<boolean>(false); // New state for initialization
 
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
+  useEffect(() => {
+    handleCreateConversation();
+  }, []);
+
   const handleCreateConversation = async () => {
-    setIsCreatedConversation(false);
+    setIsInitializing(true);
 
     const response = await getUserData();
 
@@ -62,7 +65,7 @@ export default function Chatbox() {
       .slice(1);
     setMessages(mappedMessages);
 
-    setIsCreatedConversation(true);
+    setIsInitializing(false);
   };
 
   const handleContinueConversation = async () => {
@@ -119,22 +122,31 @@ export default function Chatbox() {
   return (
     <div className="w-full max-w-md mx-auto border rounded-lg overflow-hidden shadow-lg">
       <ScrollArea className="h-[400px] p-4" ref={scrollAreaRef}>
-        {messages.map((message) => (
-          <div
-            key={message.id}
-            className={`mb-4 ${message.sender === "user" ? "text-right" : "text-left"}`}
-          >
-            <span
-              className={`inline-block p-2 rounded-lg ${
-                message.sender === "user"
-                  ? "bg-blue-500 text-white"
-                  : "bg-gray-200 text-gray-800"
-              }`}
-            >
-              {message.text}
-            </span>
+        {isInitializing ? (
+          <div className="flex justify-center items-center h-full w-full text-gray-800">
+            <div className="flex">
+              <Spinner />
+            </div>
+            <span className="ml-2">Initializing...</span>
           </div>
-        ))}
+        ) : (
+          messages.map((message) => (
+            <div
+              key={message.id}
+              className={`mb-4 ${message.sender === "user" ? "text-right" : "text-left"}`}
+            >
+              <span
+                className={`inline-block p-2 rounded-lg ${
+                  message.sender === "user"
+                    ? "bg-blue-500 text-white"
+                    : "bg-gray-200 text-gray-800"
+                }`}
+              >
+                {message.text}
+              </span>
+            </div>
+          ))
+        )}
         {isLoading && (
           <div className="text-left mb-4 animate-pulse text-gray-800">
             <span className="bg-gray-200 inline-block p-2 rounded-lg">
@@ -155,17 +167,13 @@ export default function Chatbox() {
           }}
           placeholder="Type a message..."
           className="flex-grow mr-2"
+          disabled={isInitializing}
         />
         <Button
           onClick={handleContinueConversation}
-          disabled={!isCreatedConversation || threadId === "" || isLoading}
+          disabled={isInitializing || !threadId || isLoading}
         >
           Send
-        </Button>
-      </div>
-      <div className="p-4">
-        <Button onClick={handleCreateConversation}>
-          {!isCreatedConversation ? <Spinner /> : "Create Conversation"}
         </Button>
       </div>
     </div>
