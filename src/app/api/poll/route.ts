@@ -29,7 +29,7 @@ export async function POST(req: NextRequest) {
         );
       }
 
-      return NextResponse.json(messages);
+      return NextResponse.json(messages.data);
     } else {
       return NextResponse.json({ status: run.status }, { status: 202 });
     }

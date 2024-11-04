@@ -13,11 +13,19 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Spinner } from "@/components/ui/spinner";
 import { saveProgress } from "@/lib/api";
 import { getUserData } from "../../lib/api";
+import { saveMatches } from "../../lib/api";
+import { v4 as uuidv4 } from "uuid";
 
 interface Message {
-  id: number;
+  id: string;
   text: string;
-  sender: "user" | "bot";
+  sender: "user" | "assistant";
+}
+
+interface UpdatedMessage {
+  id: any;
+  role: any;
+  content: { text: { value: string } }[];
 }
 
 export default function Chatbox() {
@@ -45,9 +53,7 @@ export default function Chatbox() {
     const initialMessage = `Hello! How can I assist you today? Here's some context: ${response.last_progress || "No recent activity."}. Matches: ${response.matches.map((match: { content_time_factor: any; content_tag: any }) => `Time Factor: ${match.content_time_factor}, Tag: ${match.content_tag}`).join(", ")}`;
 
     await continueConversation(thread.id, "assistant", initialMessage);
-    await pollConversation(assistantId, thread.id);
-
-    const updatedMessages = await listMessages(thread.id);
+    const updatedMessages = await pollConversation(assistantId, thread.id);
 
     const mappedMessages = updatedMessages
       .map(
@@ -69,48 +75,73 @@ export default function Chatbox() {
   };
 
   const handleContinueConversation = async () => {
-    if (!threadId) return;
-
+    if (!threadId || !inputValue.trim()) return;
     const userMessage: Message = {
-      id: Date.now(),
-      text: inputValue,
+      id: uuidv4(),
+      text: inputValue.trim(),
       sender: "user",
     };
 
     setMessages((prevMessages) => [...prevMessages, userMessage]);
     setInputValue("");
+    setIsLoading(true);
 
-    const role = "user";
+    try {
+      const email = localStorage.getItem("user")
+        ? JSON.parse(localStorage.getItem("user")!).email || ""
+        : "";
 
-    const email = localStorage.getItem("user")
-      ? JSON.parse(localStorage.getItem("user")!).email || ""
-      : "";
+      // Await all async operations together to reduce reflows and redundant state updates
+      await Promise.all([
+        continueConversation(threadId, "user", userMessage.text),
+        saveProgress(email, userMessage.text),
+      ]);
 
-    setIsLoading(true); // Set loading state to true
+      const updatedMessages = await pollConversation(assistantId, threadId);
+      processUpdatedMessages(updatedMessages);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
-    await continueConversation(threadId, role, userMessage.text);
-    await pollConversation(assistantId, threadId);
-    saveProgress(email, userMessage.text);
+  const processUpdatedMessages = (updatedMessages: UpdatedMessage[]) => {
+    const matches = safeJSONParse(updatedMessages[0].content[0].text.value, []);
+    if (matches.suggestions) {
+      saveMatches(matches.suggestions);
+    }
 
-    const updatedMessages = await listMessages(threadId);
-
-    const mappedMessages = updatedMessages
-      .map(
-        (item: {
-          id: any;
-          role: any;
-          content: { text: { value: any } }[];
-        }) => ({
-          id: item.id,
-          text: item.content[0].text.value,
-          sender: item.role === "user" ? "user" : "assistant",
-        })
-      )
-      .reverse()
-      .slice(1);
-
+    const mappedMessages = updatedMessages.map(mapMessage).reverse().slice(1);
     setMessages(mappedMessages);
-    setIsLoading(false); // Set loading state to false
+  };
+
+  const safeJSONParse = (str: string, defaultValue: any) => {
+    try {
+      return JSON.parse(str);
+    } catch {
+      return defaultValue;
+    }
+  };
+
+  const mapMessage = (item: UpdatedMessage): Message => {
+    let textValue = item.content[0].text.value;
+
+    const parsedResponse = safeJSONParse(textValue, {});
+    if (parsedResponse.response && parsedResponse.suggestions) {
+      const suggestions = parsedResponse.suggestions
+        .map((s: any) => `• ${s.content_tag} ${s.content_link}`)
+        .join("\n");
+      textValue = `${parsedResponse.response}\n${suggestions}`;
+    } else {
+      textValue = textValue
+        .replace(/- /g, "• ")
+        .replace(/(https?:\/\/[^\s]+)/g, "\n$1");
+    }
+
+    return {
+      id: item.id,
+      text: textValue,
+      sender: item.role === "user" ? "user" : "assistant",
+    };
   };
 
   useEffect(() => {
@@ -118,6 +149,17 @@ export default function Chatbox() {
       scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
     }
   }, [messages]);
+
+  const createLinkifiedText = (text: string) => {
+    if (!text) return "";
+
+    const urlRegex = /(https?:\/\/[^\s]+)/g;
+    return text.replace(
+      urlRegex,
+      (url) =>
+        `<a href="${url}" style="color: #007bff; text-decoration: none;" target="_blank" rel="noopener noreferrer">[Document Link]</a>`
+    );
+  };
 
   return (
     <div className="w-full max-w-md mx-auto border rounded-lg overflow-hidden shadow-lg">
@@ -140,10 +182,11 @@ export default function Chatbox() {
                   message.sender === "user"
                     ? "bg-blue-500 text-white"
                     : "bg-gray-200 text-gray-800"
-                }`}
-              >
-                {message.text}
-              </span>
+                } whitespace-pre-line`}
+                dangerouslySetInnerHTML={{
+                  __html: createLinkifiedText(message.text),
+                }}
+              />
             </div>
           ))
         )}
