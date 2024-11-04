@@ -13,6 +13,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Label } from "@/components/ui/label";
 import { useRouter } from "next/navigation";
 import { saveMatches } from "@/lib/api";
+import { Button } from "@/components/ui/button";
 
 const assistantId =
   process.env.NEXT_PUBLIC_APP_ASSISTANT_ID || "default_assistant_id";
@@ -28,6 +29,22 @@ export default function Home() {
   const [submitted, setSubmitted] = useState(false);
   const steps = formValues.map((section) => section.title);
   const [isLoading, setIsLoading] = useState(false);
+  const [hasRecord, setHasRecord] = useState(false);
+
+  useEffect(() => {
+    const checkRecord = () => {
+      const userData = localStorage.getItem("user");
+      if (userData) {
+        const parsedData = JSON.parse(userData);
+        if (parsedData.last_progress) {
+          setHasRecord(true);
+        } else {
+          setHasRecord(false);
+        }
+      }
+    };
+    checkRecord();
+  }, []);
 
   interface Message {
     content_links: string[];
@@ -265,9 +282,20 @@ export default function Home() {
 
   return (
     <div className="p-6 md:p-12 border-2 border-gray-300 rounded-2xl shadow-md">
-      <h1 className="text-xl md:text-3xl font-bold mb-4">
-        Child Development Form
-      </h1>
+      <div className="flex justify-between">
+        <h1 className="text-xl md:text-3xl font-bold mb-4">
+          Child Development Form
+        </h1>
+        {hasRecord && (
+          <Button
+            variant={"outline"}
+            className="px-4 h-10 border-gray-600 border-2 rounded-lg text-xs md:text-sm"
+            onClick={handleProceedToAI}
+          >
+            Proceed to AI Assistant
+          </Button>
+        )}
+      </div>
       <div className="flex items-center mb-4">
         <button
           onClick={handleChevronLeft}
@@ -320,14 +348,16 @@ export default function Home() {
 
       <div className="px-4">{renderStepContent(activeStep)}</div>
       <div className="mt-6 flex justify-between">
-        <button
+        <Button
+          variant={"secondary"}
           disabled={activeStep === 0}
           onClick={handleBack}
           className="py-2 px-4 bg-gray-200 text-gray-700 rounded-lg disabled:opacity-50"
         >
           Back
-        </button>
-        <button
+        </Button>
+        <Button
+          variant={"secondary"}
           onClick={activeStep === steps.length - 1 ? handleSubmit : handleNext}
           disabled={!isStepComplete || isLoading}
           className="py-2 px-6 bg-blue-600 text-white rounded-lg disabled:opacity-50"
@@ -339,7 +369,7 @@ export default function Home() {
           ) : (
             "Next"
           )}
-        </button>
+        </Button>
       </div>
       {submitted && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
@@ -356,7 +386,8 @@ export default function Home() {
                     <p className="mb-2 text-lg md:text-xl">
                       Hey, we found the best learning materials for you!
                     </p>
-                    <button
+                    <Button
+                      variant={"secondary"}
                       onClick={() => {
                         if (Array.isArray(contentLinks)) {
                           handleDownloadAll(contentLinks);
@@ -365,7 +396,7 @@ export default function Home() {
                       className="mt-2 py-2 px-4 bg-blue-600 text-white rounded-lg text-sm md:text-base"
                     >
                       Download All
-                    </button>
+                    </Button>
                   </div>
                 );
               })
@@ -378,18 +409,20 @@ export default function Home() {
             )}
 
             <div className="w-full justify-center flex mt-4">
-              <button
+              <Button
+                variant={"outline"}
                 className="mt-2 py-2 px-4 border-gray-600 border-2 rounded-lg text-sm md:text-base"
                 onClick={handleProceedToAI}
               >
                 Proceed to AI Assistant
-              </button>
-              <button
+              </Button>
+              <Button
+                variant={"secondary"}
                 onClick={() => setSubmitted(false)}
                 className="ml-4 mt-2 py-2 px-4 bg-gray-200 text-gray-700 rounded-lg"
               >
                 Close
-              </button>
+              </Button>
             </div>
           </div>
         </div>
