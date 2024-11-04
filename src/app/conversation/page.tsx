@@ -4,7 +4,6 @@ import React, { useState, useRef, useEffect } from "react";
 import {
   createConversation,
   continueConversation,
-  listMessages,
   pollConversation,
 } from "../../lib/api";
 import { Button } from "@/components/ui/button";
