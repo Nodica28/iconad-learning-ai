@@ -11,7 +11,6 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Spinner } from "@/components/ui/spinner";
 import { saveProgress } from "@/lib/api";
-import { getUserData } from "../../lib/api";
 import { saveMatches } from "../../lib/api";
 import { v4 as uuidv4 } from "uuid";
 
@@ -27,13 +26,18 @@ interface UpdatedMessage {
   content: { text: { value: string } }[];
 }
 
+type User = {
+  email: string | null;
+  lastProgress: string | null;
+  matches: Array<{ content_time_factor: any; content_tag: any }>;
+};
 export default function Chatbox() {
   const assistantId = "asst_9DakH8RzF7IQzdtvrLCEVk57";
   const [threadId, setThreadId] = useState<string>("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [isInitializing, setIsInitializing] = useState<boolean>(false); // New state for initialization
+  const [isInitializing, setIsInitializing] = useState<boolean>(false);
 
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
@@ -44,12 +48,23 @@ export default function Chatbox() {
   const handleCreateConversation = async () => {
     setIsInitializing(true);
 
-    const response = await getUserData();
+    const user: User | null = JSON.parse(
+      localStorage.getItem("user") || "null"
+    );
 
     const thread = await createConversation();
     setThreadId(thread.id);
 
-    const initialMessage = `Hello! How can I assist you today? Here's some context: ${response.last_progress || "No recent activity."}. Matches: ${response.matches.map((match: { content_time_factor: any; content_tag: any }) => `Time Factor: ${match.content_time_factor}, Tag: ${match.content_tag}`).join(", ")}`;
+    const initialMessage = `Hello! How can I assist you today? Here's some context: ${
+      user?.lastProgress ?? "No recent activity."
+    }. Matches: ${
+      user?.matches
+        ?.map(
+          (match) =>
+            `Time Factor: ${match.content_time_factor}, Tag: ${match.content_tag}`
+        )
+        .join(", ") ?? "No matches available."
+    }`;
 
     await continueConversation(thread.id, "assistant", initialMessage);
     const updatedMessages = await pollConversation(assistantId, thread.id);
@@ -86,11 +101,10 @@ export default function Chatbox() {
     setIsLoading(true);
 
     try {
-      const email = localStorage.getItem("user")
-        ? JSON.parse(localStorage.getItem("user")!).email || ""
-        : "";
-
-      // Await all async operations together to reduce reflows and redundant state updates
+      const user: User | null = JSON.parse(
+        localStorage.getItem("user") || "null"
+      );
+      const email = user ? user.email || "" : "";
       await Promise.all([
         continueConversation(threadId, "user", userMessage.text),
         saveProgress(email, userMessage.text),

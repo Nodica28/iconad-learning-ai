@@ -5,6 +5,7 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/components/ui/use-toast";
+import { getUserData } from "@/lib/api";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -26,41 +27,40 @@ export default function RootLayout({
   const router = useRouter();
 
   React.useEffect(() => {
-    // Check for user in localStorage
-    const user = localStorage.getItem("user");
-    const currentPath = window.location.pathname;
+    const checkUser = async () => {
+      const user = localStorage.getItem("user");
+      const currentPath = window.location.pathname;
+      const excludedPaths = ["/login", "/register"];
 
-    // Paths to exclude from redirection
-    const excludedPaths = ["/login", "/register"];
+      if (!excludedPaths.includes(currentPath)) {
+        if (!user) {
+          toast({
+            title: "Unauthorized",
+            description: "Please log in to access this page.",
+          });
+          router.push("/login");
+          return;
+        }
 
-    if (!excludedPaths.includes(currentPath)) {
-      if (!user) {
-        // Show a toast notification when no user is found
-        toast({
-          title: "Unauthorized",
-          description: "Please log in to access this page.",
-        });
+        const { email } = JSON.parse(user);
 
-        // Redirect to login page
-        router.push("/login");
-
-        return; // Exit early if no user is found
+        if (!email || typeof email !== "string" || email.trim() === "") {
+          router.push("/login");
+          toast({
+            title: "Unauthorized",
+            description: "Please log in to access this page.",
+          });
+        } else {
+          try {
+            const updatedUser = await getUserData();
+            localStorage.setItem("user", JSON.stringify(updatedUser));
+          } catch (error) {
+            console.error("Error fetching user data:", error);
+          }
+        }
       }
-
-      const { email } = JSON.parse(user);
-
-      if (!email || typeof email !== "string" || email.trim() === "") {
-        // Redirect if no email is found
-        router.push("/login");
-
-        // Show a toast notification
-        toast({
-          title: "Unauthorized",
-          description: "Please log in to access this page.",
-        });
-      }
-    }
-
+    };
+    checkUser();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [router]);
 
