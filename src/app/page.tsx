@@ -131,7 +131,7 @@ export default function Home() {
       await continueConversation(thread.id, role, formattedAnswers);
 
       const response = await pollConversation(assistantId, thread.id);
-      const assistantResponses = response.data.filter(
+      const assistantResponses = response.filter(
         (item: { role: string }) => item.role === "assistant"
       );
 
