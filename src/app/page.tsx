@@ -36,7 +36,7 @@ export default function Home() {
       const userData = localStorage.getItem("user");
       if (userData) {
         const parsedData = JSON.parse(userData);
-        if (parsedData.lastProgress) {
+        if (parsedData.matches) {
           setHasRecord(true);
         } else {
           setHasRecord(false);

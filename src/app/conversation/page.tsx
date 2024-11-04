@@ -47,7 +47,8 @@ export default function Chatbox() {
       const userData = localStorage.getItem("user");
       if (userData) {
         const parsedData = JSON.parse(userData);
-        if (!parsedData.lastProgress || !parsedData.matches) {
+
+        if (!parsedData.matches) {
           router.push("/");
         }
       }
