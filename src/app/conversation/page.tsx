@@ -13,7 +13,7 @@ import { Spinner } from "@/components/ui/spinner";
 import { saveProgress } from "@/lib/api";
 import { saveMatches } from "../../lib/api";
 import { v4 as uuidv4 } from "uuid";
-
+import { useRouter } from "next/navigation";
 interface Message {
   id: string;
   text: string;
@@ -32,6 +32,7 @@ type User = {
   matches: Array<{ content_time_factor: any; content_tag: any }>;
 };
 export default function Chatbox() {
+  const router = useRouter();
   const assistantId = "asst_9DakH8RzF7IQzdtvrLCEVk57";
   const [threadId, setThreadId] = useState<string>("");
   const [messages, setMessages] = useState<Message[]>([]);
@@ -40,6 +41,19 @@ export default function Chatbox() {
   const [isInitializing, setIsInitializing] = useState<boolean>(false);
 
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const checkRecord = () => {
+      const userData = localStorage.getItem("user");
+      if (userData) {
+        const parsedData = JSON.parse(userData);
+        if (!parsedData.lastProgress || !parsedData.matches) {
+          router.push("/");
+        }
+      }
+    };
+    checkRecord();
+  }, []);
 
   useEffect(() => {
     handleCreateConversation();
