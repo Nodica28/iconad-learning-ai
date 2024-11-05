@@ -14,6 +14,7 @@ import { Label } from "@/components/ui/label";
 import { useRouter } from "next/navigation";
 import { saveMatches } from "@/lib/api";
 import { Button } from "@/components/ui/button";
+import { getUserData } from "./../lib/api";
 
 const assistantId =
   process.env.NEXT_PUBLIC_APP_ASSISTANT_ID || "default_assistant_id";
@@ -233,8 +234,16 @@ export default function Home() {
     );
   };
 
-  const handleProceedToAI = () => {
-    router.push("/conversation");
+  const handleProceedToAI = async () => {
+    try {
+      const updatedUser = await getUserData();
+      if (updatedUser) {
+        localStorage.setItem("user", JSON.stringify(updatedUser));
+        router.push("/conversation");
+      }
+    } catch (error) {
+      console.error("Error fetching user data:", error);
+    }
   };
 
   const handleDownloadAll = async (downloadLinks: string[]) => {
@@ -352,15 +361,14 @@ export default function Home() {
           variant={"secondary"}
           disabled={activeStep === 0}
           onClick={handleBack}
-          className="py-2 px-4 bg-gray-200 text-gray-700 rounded-lg disabled:opacity-50"
+          className="py-2 px-4"
         >
           Back
         </Button>
         <Button
-          variant={"secondary"}
           onClick={activeStep === steps.length - 1 ? handleSubmit : handleNext}
           disabled={!isStepComplete || isLoading}
-          className="py-2 px-6 bg-blue-600 text-white rounded-lg disabled:opacity-50"
+          className="py-2 px-6  rounded-lg"
         >
           {isLoading ? (
             <Spinner />

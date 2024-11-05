@@ -12,43 +12,43 @@ import {
 } from "@/components/ui/card";
 import { fileUpload } from "@/lib/api";
 import { useToast } from "@/components/ui/use-toast";
+import { Copy } from "lucide-react";
 
 export default function AIFileUpload() {
   const [file, setFile] = useState<File | null>(null);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [response, setResponse] = useState<any>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [response, setResponse] = useState<string | null>(null);
   const { toast } = useToast();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files) {
-      const selectedFile = e.target.files[0];
-      const fileSizeLimit = 5 * 1024 * 1024; // 5MB size limit
-      const allowedFormats = [
-        "image/png",
-        "image/jpeg",
-        "image/gif",
-        "image/webp",
-      ];
+    const selectedFile = e.target.files?.[0];
+    if (!selectedFile) return;
 
-      if (!allowedFormats.includes(selectedFile.type)) {
-        toast({
-          title: "Error",
-          description:
-            "File format not supported. Please upload a PNG, JPEG, GIF, or WEBP image.",
-        });
-        return;
-      }
+    const allowedFormats = [
+      "image/png",
+      "image/jpeg",
+      "image/gif",
+      "image/webp",
+    ];
 
-      if (selectedFile.size > fileSizeLimit) {
-        toast({
-          title: "Error",
-          description:
-            "File size exceeds 5MB limit. Please choose a smaller file.",
-        });
-        return;
-      }
-      setFile(selectedFile);
+    if (!allowedFormats.includes(selectedFile.type)) {
+      toast({
+        title: "Error",
+        description:
+          "File format not supported. Please upload a PNG, JPEG, GIF, or WEBP image.",
+      });
+      return;
     }
+
+    if (selectedFile.size > 20 * 1024 * 1024) {
+      toast({
+        title: "Error",
+        description: "File size exceeds 20MB limit.",
+      });
+      return;
+    }
+
+    setFile(selectedFile);
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -56,18 +56,31 @@ export default function AIFileUpload() {
     if (!file) return;
 
     setIsLoading(true);
-
-    const fileData = new FormData();
-    fileData.append("file", file);
-
     try {
-      const response = await fileUpload(fileData);
+      const formData = new FormData();
+      formData.append("file", file);
+      const response = await fileUpload(formData);
+
       setResponse(response);
     } catch (error) {
       console.error("Error uploading file:", error);
-      setResponse({ error: "Failed to upload file" });
+      setResponse("Failed to upload file");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleCopyResponse = async () => {
+    if (response) {
+      try {
+        await navigator.clipboard.writeText(response);
+        toast({
+          title: "Copied",
+          description: "Response copied to clipboard.",
+        });
+      } catch (err) {
+        console.error("Failed to copy:", err);
+      }
     }
   };
 
@@ -81,7 +94,7 @@ export default function AIFileUpload() {
           <Input
             type="file"
             onChange={handleFileChange}
-            accept=".txt,.pdf,.doc,.docx,.jpg,.jpeg,.png"
+            accept=".png,.jpeg,.jpg,.gif,.webp,.pdf,.docx"
             className="file:mr-4 file:py-2 file:px-4 file:rounded-full h-14 file:border-0 file:text-sm file:font-semibold file:bg-violet-50 file:text-violet-700 hover:file:bg-violet-100"
           />
           <Button
@@ -93,12 +106,21 @@ export default function AIFileUpload() {
           </Button>
         </form>
       </CardContent>
-      <CardFooter className="flex flex-col items-start">
-        <h3 className="text-lg font-semibold mb-2">AI Response:</h3>
-        <div className="space-y-2 w-full">
+      <CardFooter className="flex flex-col items-start w-full space-y-2">
+        <div className="flex items-center w-full justify-between">
+          <h3 className="text-lg font-semibold">AI Response:</h3>
+          {response && (
+            <button
+              onClick={handleCopyResponse}
+              className="text-violet-700 hover:text-violet-900"
+            >
+              <Copy />
+            </button>
+          )}
+        </div>
+        <div className="space-y-2 w-full max-h-48 overflow-y-auto">
           {response ? (
             <div className="p-2 rounded-lg bg-green-100 w-full">
-              <p className="font-semibold">AI:</p>
               <pre className="whitespace-pre-wrap break-words">{response}</pre>
             </div>
           ) : (
