@@ -29,13 +29,15 @@ export default function AIFileUpload() {
       "image/jpeg",
       "image/gif",
       "image/webp",
+      "application/pdf",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
     ];
 
     if (!allowedFormats.includes(selectedFile.type)) {
       toast({
         title: "Error",
         description:
-          "File format not supported. Please upload a PNG, JPEG, GIF, or WEBP image.",
+          "Unsupported file format. Please upload a PNG, JPEG, GIF, WEBP, PDF, or DOCX.",
       });
       return;
     }
