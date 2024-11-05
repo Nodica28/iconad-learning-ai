@@ -195,7 +195,7 @@ export const saveMatches = async (matches: object) => {
 };
 
 export const fileUpload = async (fileData: FormData) => {
-  const fileSizeLimit = 5 * 1024 * 1024; // 5MB size limit
+  const fileSizeLimit = 20 * 1024 * 1024; // 5MB size limit
 
   // Find file entry in formData
   const fileEntry = Array.from(fileData.entries()).find(
@@ -208,7 +208,7 @@ export const fileUpload = async (fileData: FormData) => {
     fileEntry[1].size > fileSizeLimit
   ) {
     throw new Error(
-      "File size exceeds 5MB limit. Please choose a smaller file."
+      "File size exceeds 20MB limit. Please choose a smaller file."
     );
   }
 
