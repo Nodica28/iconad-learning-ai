@@ -27,7 +27,7 @@ async function analyzeImage(imageBuffer: Buffer) {
     const response = await openai.chat.completions.create({
       model: "gpt-4o",
       messages: messages as any,
-      max_tokens: 900,
+      max_tokens: 1500,
       temperature: 0.1,
       top_p: 1,
       frequency_penalty: 0,
