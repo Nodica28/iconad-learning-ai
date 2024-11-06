@@ -73,9 +73,13 @@ export default function AIFileUpload() {
   };
 
   const handleCopyResponse = async () => {
-    if (response) {
+    const responseTextarea = document.getElementById(
+      "responseTextarea"
+    ) as HTMLTextAreaElement;
+    const responseText = responseTextarea?.value;
+    if (responseText) {
       try {
-        await navigator.clipboard.writeText(response);
+        await navigator.clipboard.writeText(responseText);
         toast({
           title: "Copied",
           description: "Response copied to clipboard.",
@@ -122,9 +126,12 @@ export default function AIFileUpload() {
         </div>
         <div className="space-y-2 w-full max-h-48 overflow-y-auto">
           {response ? (
-            <div className="p-2 rounded-lg bg-green-100 w-full">
-              <pre className="whitespace-pre-wrap break-words">{response}</pre>
-            </div>
+            <textarea
+              id="responseTextarea"
+              className="p-2 rounded-lg bg-green-100 w-full h-48"
+              value={response}
+              onChange={(e) => setResponse(e.target.value)}
+            />
           ) : (
             "No response yet."
           )}
