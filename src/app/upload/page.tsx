@@ -128,7 +128,7 @@ export default function AIFileUpload() {
           {response ? (
             <textarea
               id="responseTextarea"
-              className="p-2 rounded-lg bg-green-100 w-full h-48"
+              className="p-2 rounded-lg bg-green-100 w-full h-48 resize-none"
               value={response}
               onChange={(e) => setResponse(e.target.value)}
             />
