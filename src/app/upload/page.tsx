@@ -124,7 +124,7 @@ export default function AIFileUpload() {
             </button>
           )}
         </div>
-        <div className="space-y-2 w-full max-h-48 overflow-y-auto">
+        <div className="space-y-2 w-full max-h-48">
           {response ? (
             <textarea
               id="responseTextarea"
