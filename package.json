@@ -23,7 +23,7 @@
   },
   "engines": {
     "node": "v22.2.x",
-    "pnpm": "9.1.1"
+    "pnpm": "9.12.3"
   },
   "dependencies": {
     "@radix-ui/react-label": "^2.1.0",
