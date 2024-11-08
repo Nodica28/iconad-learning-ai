@@ -6,9 +6,12 @@ interface Message {
 }
 
 interface ContentMatch {
-  content_link: string;
-  content_tag: string;
+  content_title: string;
+  content_age_group: Array<string>;
+  content_category: Array<string>;
+  content_difficulty: string;
   content_time_factor: "short" | "medium" | "long";
+  content_link: string;
 }
 
 interface UserDocument {

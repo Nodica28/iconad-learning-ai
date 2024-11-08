@@ -29,7 +29,13 @@ interface UpdatedMessage {
 type User = {
   email: string | null;
   lastProgress: string | null;
-  matches: Array<{ content_time_factor: any; content_tag: any }>;
+  matches: Array<{
+    content_title: string;
+    content_age_group: Array<string>;
+    content_category: Array<string>;
+    content_difficulty: string;
+    content_time_factor: string;
+  }>;
 };
 export default function Chatbox() {
   const router = useRouter();
@@ -74,10 +80,16 @@ export default function Chatbox() {
       user?.lastProgress ?? "No recent activity."
     }. Matches: ${
       user?.matches
-        ?.map(
-          (match) =>
-            `Time Factor: ${match.content_time_factor}, Tag: ${match.content_tag}`
-        )
+        ?.map((match) => {
+          const {
+            content_title,
+            content_age_group,
+            content_category,
+            content_difficulty,
+            content_time_factor,
+          } = match;
+          return `Title: ${content_title}, Age Group: ${content_age_group.join(", ")}, Category: ${content_category.join(", ")}, Difficulty: ${content_difficulty}, Time Factor: ${content_time_factor}`;
+        })
         .join(", ") ?? "No matches available."
     }`;
 
@@ -156,7 +168,7 @@ export default function Chatbox() {
     const parsedResponse = safeJSONParse(textValue, {});
     if (parsedResponse.response && parsedResponse.suggestions) {
       const suggestions = parsedResponse.suggestions
-        .map((s: any) => `• ${s.content_tag} ${s.content_link}`)
+        .map((s: any) => `• ${s.content_title} ${s.content_link}`)
         .join("\n");
       textValue = `${parsedResponse.response}\n${suggestions}`;
     } else {
