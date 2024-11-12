@@ -7,16 +7,15 @@ const region = process.env.AWS_BUCKET_REGION;
 const accessKeyId = process.env.AWS_ACCESS_KEY;
 const secretAccessKey = process.env.AWS_SECRET_KEY;
 
-// Throw an error if any of the necessary environment variables are missing
 if (!region || !accessKeyId || !secretAccessKey) {
   throw new Error("Missing AWS configuration environment variables");
 }
 
 const s3Client = new S3Client({
-  region: region,
+  region,
   credentials: {
-    accessKeyId: accessKeyId,
-    secretAccessKey: secretAccessKey,
+    accessKeyId,
+    secretAccessKey,
   },
 });
 
@@ -33,7 +32,7 @@ interface Material {
   document_link?: string;
 }
 
-export async function uploadFileToS3(fileBuffer: Buffer, fileName: string) {
+async function uploadFileToS3(fileBuffer: Buffer, fileName: string) {
   const key = `${fileName}-${Date.now()}`;
 
   const params = {
@@ -45,7 +44,6 @@ export async function uploadFileToS3(fileBuffer: Buffer, fileName: string) {
   const command = new PutObjectCommand(params);
   await s3Client.send(command);
 
-  // Return the key of the uploaded file
   return { key };
 }
 
