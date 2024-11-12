@@ -194,7 +194,7 @@ export const saveMatches = async (matches: object) => {
   return res.json();
 };
 
-export const fileUpload = async (fileData: FormData) => {
+export const analyzeFile = async (fileData: FormData) => {
   const fileSizeLimit = 20 * 1024 * 1024; // 5MB size limit
 
   // Find file entry in formData
@@ -212,7 +212,7 @@ export const fileUpload = async (fileData: FormData) => {
     );
   }
 
-  const res = await fetch(`/api/upload`, {
+  const res = await fetch(`/api/analyze`, {
     method: "POST",
     headers: {
       Accept: "application/json",
@@ -224,5 +224,62 @@ export const fileUpload = async (fileData: FormData) => {
     throw new Error("Failed to upload the file.");
   }
 
+  return res.json();
+};
+
+export const saveMaterial = async (fileData: FormData) => {
+  const fileSizeLimit = 20 * 1024 * 1024; // 5MB size limit
+
+  // Find file entry in formData
+  const fileEntry = Array.from(fileData.entries()).find(
+    ([key]) => key === "file"
+  );
+
+  if (
+    fileEntry &&
+    fileEntry[1] instanceof File &&
+    fileEntry[1].size > fileSizeLimit
+  ) {
+    throw new Error(
+      "File size exceeds 20MB limit. Please choose a smaller file."
+    );
+  }
+
+  const res = await fetch(`/api/store`, {
+    method: "POST",
+    headers: {
+      Accept: "application/json",
+    },
+    body: fileData,
+  });
+
+  if (!res.ok) {
+    throw new Error("Failed to upload the file.");
+  }
+
+  return res.json();
+};
+
+export const getMaterials = async () => {
+  const user = localStorage.getItem("user");
+  if (!user) {
+    throw new Error("No user found in localStorage.");
+  }
+
+  const { email } = JSON.parse(user);
+
+  if (!email || typeof email !== "string" || email.trim() === "") {
+    throw new Error("Email is not a valid string.");
+  }
+
+  const res = await fetch(`/api/store?email=${encodeURIComponent(email)}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+  if (!res.ok) {
+    throw new Error("Failed to fetch materials.");
+  }
   return res.json();
 };
