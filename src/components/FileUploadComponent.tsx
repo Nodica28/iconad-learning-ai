@@ -10,14 +10,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { fileUpload } from "@/lib/api";
+import { analyzeFile, saveMaterial } from "@/lib/api";
 import { useToast } from "@/components/ui/use-toast";
 import { Copy } from "lucide-react";
 
 export default function AIFileUpload() {
   const [file, setFile] = useState<File | null>(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [response, setResponse] = useState<string | null>(null);
+  const [material, setMaterial] = useState<string | null>(null);
   const { toast } = useToast();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -61,12 +61,12 @@ export default function AIFileUpload() {
     try {
       const formData = new FormData();
       formData.append("file", file);
-      const response = await fileUpload(formData);
+      const material = await analyzeFile(formData);
 
-      setResponse(response);
+      setMaterial(material);
     } catch (error) {
       console.error("Error uploading file:", error);
-      setResponse("Failed to upload file");
+      setMaterial("Failed to upload file");
     } finally {
       setIsLoading(false);
     }
@@ -90,12 +90,38 @@ export default function AIFileUpload() {
     }
   };
 
+  const handleCancel = () => {
+    setFile(null);
+    setMaterial(null);
+  };
+
+  const handleAddToDatabase = async () => {
+    if (!file || !material) return;
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("material", material);
+
+      const response = await saveMaterial(formData);
+
+      console.log(response);
+
+      toast({
+        title: "Success",
+        description: "Data added to the database.",
+      });
+    } catch (error) {
+      console.error("Failed to add to the database:", error);
+    }
+  };
+
   return (
     <Card className="w-full h-full shadow-md">
       <CardHeader>
         <CardTitle>AI File Analysis</CardTitle>
       </CardHeader>
-      <CardContent>
+      <CardContent className="space-y-4">
         <form onSubmit={handleSubmit} className="space-y-4">
           <Input
             type="file"
@@ -111,11 +137,9 @@ export default function AIFileUpload() {
             {isLoading ? "Analyzing..." : "Analyze File"}
           </Button>
         </form>
-      </CardContent>
-      <CardFooter className="flex flex-col items-start w-full space-y-2">
         <div className="flex items-center w-full justify-between">
           <h3 className="text-lg font-semibold">AI Response:</h3>
-          {response && (
+          {material && (
             <button
               onClick={handleCopyResponse}
               className="text-violet-700 hover:text-violet-900"
@@ -125,17 +149,35 @@ export default function AIFileUpload() {
           )}
         </div>
         <div className="space-y-2 w-full max-h-48">
-          {response ? (
+          {material ? (
             <textarea
               id="responseTextarea"
               className="p-2 rounded-lg bg-green-100 w-full h-48 resize-none"
-              value={response}
-              onChange={(e) => setResponse(e.target.value)}
+              value={material}
+              onChange={(e) => setMaterial(e.target.value)}
             />
           ) : (
-            "No response yet."
+            "No material yet."
           )}
         </div>
+      </CardContent>
+      <CardFooter className="flex w-full gap-4">
+        <Button
+          variant={"outline"}
+          className="w-1/2"
+          onClick={handleCancel}
+          disabled={!file}
+        >
+          Cancel
+        </Button>
+        <Button
+          variant={"default"}
+          className="w-1/2"
+          onClick={handleAddToDatabase}
+          disabled={!file || !material}
+        >
+          Add to Database
+        </Button>
       </CardFooter>
     </Card>
   );
