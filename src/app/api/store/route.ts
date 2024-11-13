@@ -1,6 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { saveMaterialToDatabase, getMaterialsFromDatabase } from "@/lib/store";
+import { v4 as uuidv4 } from "uuid";
 
 const bucketName = process.env.AWS_BUCKET_NAME;
 const region = process.env.AWS_BUCKET_REGION;
@@ -33,7 +34,9 @@ interface Material {
 }
 
 async function uploadFileToS3(fileBuffer: Buffer, fileName: string) {
-  const key = `${fileName}-${Date.now()}`;
+  const fileExtension = fileName.substring(fileName.lastIndexOf("."));
+  const uniqueId = uuidv4();
+  const key = `${uniqueId}-${Date.now()}${fileExtension}`;
 
   const params = {
     Bucket: bucketName,

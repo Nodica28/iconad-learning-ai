@@ -1,4 +1,5 @@
 import clientPromise from "@/lib/mongodb";
+import { ObjectId } from "mongodb";
 
 export const saveMaterialToDatabase = async (material: Record<string, any>) => {
   try {
@@ -34,3 +35,47 @@ export const getMaterialsFromDatabase = async (email: string) => {
     return null;
   }
 };
+
+export const deleteMaterialFromDatabase = async (id: string) => {
+  try {
+    const client = await clientPromise;
+    const db = client.db("userDB");
+    const materialsCollection = db.collection("materials");
+
+    // Find the document to retrieve the document_link
+    const material = await materialsCollection.findOne({
+      _id: new ObjectId(id),
+    });
+    if (!material) {
+      throw new Error("Document not found");
+    }
+
+    // Remove document
+    await materialsCollection.deleteOne({ _id: new ObjectId(id) });
+
+    return material; // Return the deleted material
+  } catch (error) {
+    console.error("Failed to delete material from database:", error);
+    throw error;
+  }
+};
+
+export async function updateMaterialInDatabase(id: string, updateData: any) {
+  const client = await clientPromise;
+  await client.connect();
+  const database = client.db("userDB");
+  const materialsCollection = database.collection("materials"); // Replace with your collection name
+
+  const filter = { _id: new ObjectId(id) };
+  const { _id, ...updateDocument } = updateData;
+
+  const result = await materialsCollection.updateOne(filter, {
+    $set: updateDocument,
+  });
+
+  if (result.matchedCount === 0) {
+    throw new Error("Material not found.");
+  }
+
+  return { id };
+}

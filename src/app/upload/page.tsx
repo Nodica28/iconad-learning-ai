@@ -1,5 +1,5 @@
 import AIFileUpload from "@/components/FileUploadComponent";
-import MaterialsTable from "@/components/MaterialsTable";
+import MaterialsTable from "@/components/materials-table/MaterialsTable";
 
 export default function Page() {
   return (

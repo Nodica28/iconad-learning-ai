@@ -283,3 +283,59 @@ export const getMaterials = async () => {
   }
   return res.json();
 };
+
+export const getPresignedUrl = async (id: string) => {
+  const res = await fetch(`/api/store/${id}`, {
+    method: "GET",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (!res.ok) {
+    throw new Error("Failed to get presigned URL.");
+  }
+
+  return res.json();
+};
+
+type LearningMaterial = {
+  _id: string;
+  title: string;
+  age_group: string[];
+  content_type: string[];
+  skill_level: string;
+  duration: string;
+  document_link: string;
+};
+
+export const updateMaterial = async (material: LearningMaterial) => {
+  const res = await fetch(`/api/store/${material._id}`, {
+    method: "PUT",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(material),
+  });
+
+  if (!res.ok) {
+    throw new Error("Failed to update material.");
+  }
+
+  return res.json();
+};
+
+export const deleteMaterial = async (id: string) => {
+  const res = await fetch(`/api/store/${id}`, {
+    method: "DELETE",
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  if (!res.ok) {
+    throw new Error("Failed to delete material.");
+  }
+
+  return res.json();
+};
