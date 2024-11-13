@@ -1,4 +1,5 @@
 "use client";
+"use client";
 
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -13,6 +14,7 @@ import {
 import { analyzeFile, saveMaterial } from "@/lib/api";
 import { useToast } from "@/components/ui/use-toast";
 import { Copy } from "lucide-react";
+import { Spinner } from "@/components/ui/spinner";
 
 export default function AIFileUpload() {
   const [file, setFile] = useState<File | null>(null);
@@ -61,9 +63,9 @@ export default function AIFileUpload() {
     try {
       const formData = new FormData();
       formData.append("file", file);
-      const material = await analyzeFile(formData);
+      const analyzedMaterial = await analyzeFile(formData);
 
-      setMaterial(material);
+      setMaterial(analyzedMaterial);
     } catch (error) {
       console.error("Error uploading file:", error);
       setMaterial("Failed to upload file");
@@ -98,6 +100,7 @@ export default function AIFileUpload() {
   const handleAddToDatabase = async () => {
     if (!file || !material) return;
 
+    setIsLoading(true);
     try {
       const formData = new FormData();
       formData.append("file", file);
@@ -113,6 +116,8 @@ export default function AIFileUpload() {
       });
     } catch (error) {
       console.error("Failed to add to the database:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -134,7 +139,7 @@ export default function AIFileUpload() {
             disabled={!file || isLoading}
             className="w-full"
           >
-            {isLoading ? "Analyzing..." : "Analyze File"}
+            {isLoading ? <Spinner /> : "Analyze File"}
           </Button>
         </form>
         <div className="flex items-center w-full justify-between">
@@ -174,9 +179,9 @@ export default function AIFileUpload() {
           variant={"default"}
           className="w-1/2"
           onClick={handleAddToDatabase}
-          disabled={!file || !material}
+          disabled={!file || !material || isLoading}
         >
-          Add to Database
+          {isLoading ? <Spinner /> : "Add to Database"}
         </Button>
       </CardFooter>
     </Card>
