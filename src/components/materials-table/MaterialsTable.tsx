@@ -66,9 +66,13 @@ export default function MaterialsTable() {
         isEditDialogOpen={isEditDialogOpen}
         materialToEdit={materialToEdit}
         setIsEditDialogOpen={setIsEditDialogOpen}
-        handleFieldChange={(field, value) => {
+        handleFieldChange={(field: keyof LearningMaterial, value) => {
           if (materialToEdit) {
-            setMaterialToEdit({ ...materialToEdit, [field]: value });
+            const updatedValue = Array.isArray(materialToEdit[field])
+              ? (value as string[]) // Ensure the value matches the expected type
+              : (value as string); // Ensure the value matches the expected type
+
+            setMaterialToEdit({ ...materialToEdit, [field]: updatedValue });
             setHasChanges(true);
           }
         }}
