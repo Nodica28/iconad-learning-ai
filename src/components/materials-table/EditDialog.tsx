@@ -12,7 +12,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { LearningMaterial } from "@/types/materials";
 import { DialogDescription } from "@radix-ui/react-dialog";
-import { Plus, Check, X } from "lucide-react";
+import { Check, X } from "lucide-react";
 
 interface EditDialogProps {
   isEditDialogOpen: boolean;
