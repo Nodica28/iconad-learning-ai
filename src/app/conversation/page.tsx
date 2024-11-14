@@ -88,12 +88,12 @@ export default function Chatbox() {
             content_difficulty,
             content_time_factor,
           } = match;
-          return `Title: ${content_title}, Age Group: ${content_age_group.join(", ")}, Category: ${content_category.join(", ")}, Difficulty: ${content_difficulty}, Time Factor: ${content_time_factor}`;
+          return `{Title: ${content_title}, Age Group: ${content_age_group.join(", ")}, Category: ${content_category.join(", ")}, Difficulty: ${content_difficulty}, Time Factor: ${content_time_factor}}`;
         })
         .join(", ") ?? "No matches available."
     }`;
 
-    await continueConversation(thread.id, "assistant", initialMessage);
+    await continueConversation(thread.id, "user", initialMessage);
     const updatedMessages = await pollConversation(assistantId, thread.id);
 
     const mappedMessages = updatedMessages
