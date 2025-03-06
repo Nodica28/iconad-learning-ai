@@ -3,20 +3,20 @@ import sharp from "sharp";
 import openai from "@/lib/openai";
 import { uploadPrompt } from "@/constants/uploadPrompt";
 
-const vectorId = process.env.VECTOR_ID;
 const assistantId = process.env.FILE_ANALYZER_ASSISTANT_ID;
 
 async function processPdfFile(file: File): Promise<string> {
-  if (!vectorId || !assistantId) {
-    throw new Error("IDs are not defined.");
+  if (!assistantId) {
+    throw new Error("Assistant ID is not defined.");
   }
 
-  await openai.beta.vectorStores.fileBatches.uploadAndPoll(vectorId, {
-    files: [file],
+  // Upload the file to OpenAI
+  const fileUploadResponse = await openai.files.create({
+    file: file,
+    purpose: "assistants",
   });
 
-  const vectorStoreFiles = await openai.beta.vectorStores.files.list(vectorId);
-
+  // Create a thread with the file attached
   const thread = await openai.beta.threads.create({
     messages: [
       {
@@ -24,7 +24,7 @@ async function processPdfFile(file: File): Promise<string> {
         content: "Analyze this file for me.",
         attachments: [
           {
-            file_id: vectorStoreFiles.data[0].id,
+            file_id: fileUploadResponse.id,
             tools: [{ type: "file_search" }],
           },
         ],
@@ -32,27 +32,34 @@ async function processPdfFile(file: File): Promise<string> {
     ],
   });
 
+  // Run the assistant on the thread
   const run = await openai.beta.threads.runs.createAndPoll(thread.id, {
     assistant_id: assistantId,
   });
 
-  const messages = await openai.beta.threads.messages.list(run.thread_id);
+  // Get the assistant's response
+  const messages = await openai.beta.threads.messages.list(thread.id, {
+    order: "desc",
+    limit: 1,
+  });
+
   let analysisResult = "";
   if (
     messages.data &&
-    messages.data[0] &&
+    messages.data.length > 0 &&
+    messages.data[0].content &&
+    messages.data[0].content.length > 0 &&
     "text" in messages.data[0].content[0]
   ) {
     analysisResult = messages.data[0].content[0].text.value
       .replace(/```json|```/g, "")
       .trim();
+  } else {
+    throw new Error("Unable to retrieve analysis results from OpenAI");
   }
 
-  await openai.files.del(vectorStoreFiles.data[0].id);
-  await openai.beta.vectorStores.files.del(
-    vectorId,
-    vectorStoreFiles.data[0].id
-  );
+  // Clean up by deleting the file
+  await openai.files.del(fileUploadResponse.id);
 
   return analysisResult;
 }
@@ -133,6 +140,7 @@ export async function POST(req: NextRequest) {
 
     return NextResponse.json(analysisResult);
   } catch (error: any) {
+    console.error("Error processing file:", error);
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 }
