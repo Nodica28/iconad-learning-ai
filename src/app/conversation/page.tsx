@@ -14,6 +14,9 @@ import { saveProgress } from "@/lib/api";
 import { saveMatches } from "../../lib/api";
 import { v4 as uuidv4 } from "uuid";
 import { useRouter } from "next/navigation";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { MessageSquare, User, RefreshCw } from "lucide-react";
+import ChildProfileContainer from "@/components/child-profile/ChildProfileContainer";
 interface Message {
   id: string;
   text: string;
@@ -37,14 +40,15 @@ type User = {
     content_time_factor: string;
   }>;
 };
-export default function Chatbox() {
+export default function ConversationPage() {
   const router = useRouter();
-  const assistantId = "asst_9DakH8RzF7IQzdtvrLCEVk57";
+  const assistantId = "asst_9W3JMh4NyeyLREoQUysUQU6Z";
   const [threadId, setThreadId] = useState<string>("");
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState<string>("");
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isInitializing, setIsInitializing] = useState<boolean>(false);
+  const [activeTab, setActiveTab] = useState("conversation");
 
   const scrollAreaRef = useRef<HTMLDivElement>(null);
 
@@ -60,10 +64,12 @@ export default function Chatbox() {
       }
     };
     checkRecord();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
     handleCreateConversation();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleCreateConversation = async () => {
@@ -201,64 +207,108 @@ export default function Chatbox() {
     );
   };
 
+  const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleContinueConversation();
+    }
+  };
+
+  const clearConversation = () => {
+    window.location.reload();
+  };
+
   return (
-    <div className="w-full max-w-md mx-auto border rounded-lg overflow-hidden shadow-lg">
-      <ScrollArea className="h-[400px] p-4" ref={scrollAreaRef}>
-        {isInitializing ? (
-          <div className="flex justify-center items-center h-full w-full text-gray-800">
-            <div className="flex">
-              <Spinner />
-            </div>
-            <span className="ml-2">Initializing...</span>
-          </div>
-        ) : (
-          messages.map((message) => (
-            <div
-              key={message.id}
-              className={`mb-4 ${message.sender === "user" ? "text-right" : "text-left"}`}
+    <div className="max-w-4xl mx-auto">
+      <h1 className="text-2xl font-bold mb-6 flex items-center gap-2">
+        <MessageSquare className="h-6 w-6 text-primary" />
+        Learning Journey Conversations
+      </h1>
+
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="grid grid-cols-2 mb-6">
+          <TabsTrigger value="conversation" className="gap-2">
+            <MessageSquare className="h-4 w-4" /> Conversation
+          </TabsTrigger>
+          <TabsTrigger value="childProfile" className="gap-2">
+            <User className="h-4 w-4" /> Child Profile
+          </TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="conversation" className="space-y-4">
+          <div className="flex justify-between items-center">
+            <h2 className="text-lg font-medium">Chat with AI Assistant</h2>
+            <Button
+              variant="outline"
+              size="sm"
+              className="gap-1"
+              onClick={clearConversation}
             >
-              <span
-                className={`inline-block p-2 rounded-lg ${
-                  message.sender === "user"
-                    ? "bg-blue-500 text-white"
-                    : "bg-gray-200 text-gray-800"
-                } whitespace-pre-line`}
-                dangerouslySetInnerHTML={{
-                  __html: createLinkifiedText(message.text),
-                }}
-              />
-            </div>
-          ))
-        )}
-        {isLoading && (
-          <div className="text-left mb-4 animate-pulse text-gray-800">
-            <span className="bg-gray-200 inline-block p-2 rounded-lg">
-              • • •
-            </span>
+              <RefreshCw className="h-4 w-4" /> New Conversation
+            </Button>
           </div>
-        )}
-      </ScrollArea>
-      <div className="border-t p-4 flex">
-        <Input
-          type="text"
-          value={inputValue}
-          onChange={(e) => setInputValue(e.target.value)}
-          onKeyPress={(e) => {
-            if (e.key === "Enter") {
-              handleContinueConversation();
-            }
-          }}
-          placeholder="Type a message..."
-          className="flex-grow mr-2"
-          disabled={isInitializing}
-        />
-        <Button
-          onClick={handleContinueConversation}
-          disabled={isInitializing || !threadId || isLoading}
-        >
-          Send
-        </Button>
-      </div>
+
+          {/* Messages container */}
+          <div className="bg-card rounded-lg border border-border p-4 h-[500px] overflow-y-auto">
+            <ScrollArea className="p-4" ref={scrollAreaRef}>
+              {isInitializing ? (
+                <div className="flex justify-center items-center h-full w-full text-gray-800">
+                  <div className="flex">
+                    <Spinner />
+                  </div>
+                  <span className="ml-2">Initializing...</span>
+                </div>
+              ) : (
+                messages.map((message) => (
+                  <div
+                    key={message.id}
+                    className={`mb-4 ${message.sender === "user" ? "text-right" : "text-left"}`}
+                  >
+                    <span
+                      className={`inline-block p-2 rounded-lg ${
+                        message.sender === "user"
+                          ? "bg-blue-500 text-white"
+                          : "bg-gray-200 text-gray-800"
+                      } whitespace-pre-line`}
+                      dangerouslySetInnerHTML={{
+                        __html: createLinkifiedText(message.text),
+                      }}
+                    />
+                  </div>
+                ))
+              )}
+              {isLoading && (
+                <div className="text-left mb-4 animate-pulse text-gray-800">
+                  <span className="bg-gray-200 inline-block p-2 rounded-lg">
+                    • • •
+                  </span>
+                </div>
+              )}
+            </ScrollArea>
+          </div>
+          <div className="border-t p-4 flex">
+            <Input
+              type="text"
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              onKeyPress={handleKeyDown}
+              placeholder="Type a message..."
+              className="flex-grow mr-2"
+              disabled={isInitializing}
+            />
+            <Button
+              onClick={handleContinueConversation}
+              disabled={isInitializing || !threadId || isLoading}
+            >
+              Send
+            </Button>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="childProfile" className="space-y-6">
+          <ChildProfileContainer />
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

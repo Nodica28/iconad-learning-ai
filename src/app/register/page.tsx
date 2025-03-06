@@ -61,7 +61,7 @@ export default function RegistrationPage() {
   };
 
   return (
-    <div className="h-full w-full flex items-center justify-center py-10">
+    <div className="h-screen w-full flex items-center justify-center py-10">
       <Card className="w-[350px]">
         <CardHeader>
           <CardTitle>Register</CardTitle>
