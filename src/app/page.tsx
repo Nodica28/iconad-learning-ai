@@ -1,440 +1,281 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import formValues from "@/constants/formValues.json";
-import {
-  createConversation,
-  continueConversation,
-  pollConversation,
-} from "./../lib/api";
-import { ChevronRight, ChevronLeft, CircleCheck } from "lucide-react";
-import { Spinner } from "@/components/ui/spinner";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Label } from "@/components/ui/label";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { saveMatches } from "@/lib/api";
 import { Button } from "@/components/ui/button";
-import { getUserData } from "./../lib/api";
-
-const assistantId =
-  process.env.NEXT_PUBLIC_APP_ASSISTANT_ID || "default_assistant_id";
-
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import {
+  BookOpen,
+  Brain,
+  Search,
+  Sparkles,
+  ArrowRight,
+  BookMarked,
+  Palette,
+  Music,
+  Code,
+  Activity,
+  MessageSquare,
+  Upload,
+  User,
+} from "lucide-react";
+import ChildProfileContainer from "@/components/child-profile/ChildProfileContainer";
 export default function Home() {
   const router = useRouter();
-  const [activeStep, setActiveStep] = useState(0);
-  const [answers, setAnswers] = useState<Record<string, string>>({});
-  const [isStepComplete, setIsStepComplete] = useState(false);
-  const [visibleStart, setVisibleStart] = useState(0);
-  const [visibleEnd, setVisibleEnd] = useState(5);
-  const [summary, setSummary] = useState<Message[]>([]);
-  const [submitted, setSubmitted] = useState(false);
-  const steps = formValues.map((section) => section.title);
-  const [isLoading, setIsLoading] = useState(false);
-  const [hasRecord, setHasRecord] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
-  useEffect(() => {
-    const checkRecord = () => {
-      const userData = localStorage.getItem("user");
-      if (userData) {
-        const parsedData = JSON.parse(userData);
-        if (parsedData.matches) {
-          setHasRecord(true);
-        } else {
-          setHasRecord(false);
-        }
-      }
-    };
-    checkRecord();
-  }, []);
+  // Mock recommended learning materials
+  const recommendedMaterials = [
+    {
+      id: 1,
+      title: "Introduction to Colors and Shapes",
+      description:
+        "A fun interactive guide to basic shapes and colors for young learners.",
+      category: "Visual Learning",
+      ageRange: "3-5 years",
+      tags: ["colors", "shapes", "interactive"],
+      icon: <Palette className="h-8 w-8 text-primary" />,
+    },
+    {
+      id: 2,
+      title: "Musical Alphabet Adventure",
+      description:
+        "Learn the alphabet through catchy songs and musical activities.",
+      category: "Audio Learning",
+      ageRange: "4-6 years",
+      tags: ["music", "alphabet", "songs"],
+      icon: <Music className="h-8 w-8 text-primary" />,
+    },
+    {
+      id: 3,
+      title: "My First Coding Journey",
+      description:
+        "Simple coding concepts explained through interactive stories and games.",
+      category: "STEM",
+      ageRange: "6-8 years",
+      tags: ["coding", "logic", "games"],
+      icon: <Code className="h-8 w-8 text-primary" />,
+    },
+    {
+      id: 4,
+      title: "Nature Explorer's Guide",
+      description:
+        "Discover the wonders of nature with this interactive guide to plants and animals.",
+      category: "Science",
+      ageRange: "5-7 years",
+      tags: ["nature", "animals", "plants"],
+      icon: <Activity className="h-8 w-8 text-primary" />,
+    },
+  ];
 
-  interface Message {
-    content_links: string[];
-  }
-
-  interface Answer {
-    [key: string]: string;
-  }
-
-  const checkStepCompletion = () => {
-    const currentSection = formValues[activeStep];
-    if (!currentSection) return;
-
-    const allQuestionsAnswered = currentSection.questions.every(
-      (_question, questionIndex) =>
-        answers[`question_${activeStep}_${questionIndex}`]
-    );
-
-    setIsStepComplete(allQuestionsAnswered);
-  };
-
-  useEffect(() => {
-    checkStepCompletion();
-    //eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [activeStep, answers]);
-
-  const handleNext = () => {
-    setActiveStep((prevActiveStep) => {
-      const newActiveStep = prevActiveStep + 1;
-      if (newActiveStep >= visibleEnd) {
-        setVisibleStart(visibleStart + 1);
-        setVisibleEnd(visibleEnd + 1);
-      }
-      return newActiveStep;
-    });
-  };
-
-  const handleBack = () => {
-    setActiveStep((prevActiveStep) => {
-      const newActiveStep = prevActiveStep - 1;
-      if (newActiveStep < visibleStart) {
-        setVisibleStart(visibleStart - 1);
-        setVisibleEnd(visibleEnd - 1);
-      }
-      return newActiveStep;
-    });
-  };
-
-  const handleAnswerChange = (questionId: string, value: string) => {
-    setAnswers((prevAnswers) => ({
-      ...prevAnswers,
-      [questionId]: value,
-    }));
-  };
-
-  const handleSubmit = async () => {
-    const role = "user";
-    setIsLoading(true);
-
-    const formattedAnswers = JSON.stringify(
-      formValues.reduce(
-        (acc, section, sectionIndex) => {
-          acc[section.title] = section.questions.reduce(
-            (questionAcc: Answer, question, questionIndex) => {
-              const answerKey = `question_${sectionIndex}_${questionIndex}`;
-              questionAcc[question.question] = answers[answerKey] || "";
-              return questionAcc;
-            },
-            {}
-          );
-          return acc;
-        },
-        {} as Record<string, Record<string, string>>
-      )
-    );
-
-    try {
-      const thread = await createConversation();
-
-      if (!thread.id) {
-        throw new Error("Failed to retrieve thread ID");
-      }
-
-      await continueConversation(thread.id, role, formattedAnswers);
-
-      const response = await pollConversation(assistantId, thread.id);
-      const assistantResponses = response.filter(
-        (item: { role: string }) => item.role === "assistant"
-      );
-
-      const mappedMessages = await Promise.all(
-        assistantResponses.map(
-          async (item: { content: { text: { value: any } }[] }) => {
-            const rawContent = item.content[0].text.value;
-            const jsonString = rawContent.match(
-              /```json\n([\s\S]*?)\n```/
-            )?.[1];
-            if (jsonString) {
-              try {
-                const parsedContent = JSON.parse(jsonString);
-                const contentLinks = parsedContent.matches.map(
-                  (match: { content_link: string }) => match.content_link
-                );
-                await saveMatches(parsedContent.matches);
-                return { content_links: contentLinks };
-              } catch (error) {
-                console.error("Error parsing JSON content:", error);
-              }
-            }
-            return { content_links: [] };
-          }
-        )
-      );
-
-      setSubmitted(true);
-      setSummary(mappedMessages);
-    } catch (error) {
-      console.error("Error submitting form:", error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  const renderStepContent = (step: number) => {
-    const currentSection = formValues[step];
-    if (!currentSection) return null;
-    return (
-      <>
-        <h2 className="mb-2 text-[1.2rem] sm:text-[1.3rem] md:text-[1.6rem]">
-          {currentSection.title}
-        </h2>
-        {currentSection.questions.map((question, index) => (
-          <div key={index} className="mb-3">
-            <h3 className="text-[1rem] sm:text-[1.1rem] md:text-[1.3rem] mt-3">
-              {question.question}
-            </h3>
-            <RadioGroup
-              name={`question_${step}_${index}`}
-              value={answers[`question_${step}_${index}`] || ""}
-              onValueChange={(value: string) =>
-                handleAnswerChange(`question_${step}_${index}`, value)
-              }
-              className="mt-2"
-            >
-              {question.options.map((option) => (
-                <div className="flex items-center space-x-2" key={option.value}>
-                  <RadioGroupItem
-                    value={option.value}
-                    id={`option-${option.value}`}
-                  />
-                  <Label
-                    htmlFor={`option-${option.value}`}
-                    className="text-[.9rem] sm:text-[1rem] md:text-[1.1rem]"
-                  >
-                    {option.label}
-                  </Label>
-                </div>
-              ))}
-            </RadioGroup>
-          </div>
-        ))}
-      </>
-    );
-  };
-
-  const handleChevronLeft = () => {
-    if (visibleStart > 0) {
-      setVisibleStart(visibleStart - 1);
-      setVisibleEnd(visibleEnd - 1);
-    }
-  };
-
-  const handleChevronRight = () => {
-    if (visibleEnd < steps.length) {
-      setVisibleStart(visibleStart + 1);
-      setVisibleEnd(visibleEnd + 1);
-    }
-  };
-
-  const isStepAnswered = (stepIndex: number) => {
-    const section = formValues[stepIndex];
-
-    return section.questions.every(
-      (_question, questionIndex) =>
-        answers[`question_${stepIndex}_${questionIndex}`]
-    );
-  };
-
-  const handleProceedToAI = async () => {
-    try {
-      const updatedUser = await getUserData();
-      if (updatedUser) {
-        localStorage.setItem("user", JSON.stringify(updatedUser));
-        router.push("/conversation");
-      }
-    } catch (error) {
-      console.error("Error fetching user data:", error);
-    }
-  };
-
-  const handleDownloadAll = async (downloadLinks: string[]) => {
-    if (!downloadLinks || downloadLinks.length === 0) {
-      return; // Exit if the array is undefined or empty
-    }
-
-    alert("Please ensure pop-ups are allowed to download all files.");
-
-    for (const link of downloadLinks) {
-      const isImage = [
-        "png",
-        "svg",
-        "jpg",
-        "jpeg",
-        "gif",
-        "bmp",
-        "webp",
-        "tiff",
-        "ico",
-        "heic",
-        "avif",
-      ].some((ext) => link.toLowerCase().endsWith(ext));
-
-      if (isImage) {
-        try {
-          const response = await fetch(link);
-          const blob = await response.blob();
-          const url = URL.createObjectURL(blob);
-          const a = document.createElement("a");
-          a.href = url;
-          a.download = link.split("/").pop() || "download";
-          document.body.appendChild(a);
-          a.click();
-          document.body.removeChild(a);
-          URL.revokeObjectURL(url);
-        } catch (error) {
-          console.error("Error downloading image:", error);
-        }
-      } else {
-        window.open(link, "_blank", "noopener,noreferrer");
-      }
-    }
-  };
+  // Mock categories
+  const categories = [
+    { name: "Visual Learning", icon: <Palette className="h-5 w-5" /> },
+    { name: "Audio Learning", icon: <Music className="h-5 w-5" /> },
+    { name: "STEM", icon: <Code className="h-5 w-5" /> },
+    { name: "Science", icon: <Activity className="h-5 w-5" /> },
+    { name: "Language", icon: <BookMarked className="h-5 w-5" /> },
+    { name: "Mathematics", icon: <Brain className="h-5 w-5" /> },
+  ];
 
   return (
-    <div className="p-6 md:p-12 border-2 border-gray-300 rounded-2xl shadow-md">
-      <div className="flex justify-between">
-        <h1 className="text-xl md:text-3xl font-bold mb-4">
-          Child Development Form
-        </h1>
-        {hasRecord && (
-          <Button
-            variant={"outline"}
-            className="px-4 h-10 border-gray-600 border-2 rounded-lg text-xs md:text-sm"
-            onClick={handleProceedToAI}
-          >
-            Proceed to AI Assistant
-          </Button>
-        )}
-      </div>
-      <div className="flex items-center mb-4">
-        <button
-          onClick={handleChevronLeft}
-          disabled={visibleStart === 0}
-          className="mr-2"
-        >
-          <ChevronLeft className="h-6 w-6 text-gray-500" />
-        </button>
-        <div className="flex-grow overflow-hidden">
-          <div className="flex justify-between gap-2 md:gap-4">
-            {steps.slice(visibleStart, visibleEnd).map((label, index) => {
-              const actualIndex = visibleStart + index;
-              const isCompleted = isStepAnswered(actualIndex);
-              return (
-                <div
-                  key={label}
-                  className="text-center flex-grow phone:w-[30%] sm:max-w-[20%]"
-                >
-                  <div
-                    className={`w-6 h-6 rounded-full ${
-                      activeStep === actualIndex
-                        ? "bg-blue-600 text-white"
-                        : isCompleted
-                          ? "bg-blue-300 text-white"
-                          : "bg-gray-300 text-gray-700"
-                    } flex items-center justify-center mx-auto mb-1`}
-                  >
-                    {isCompleted ? (
-                      <CircleCheck className="h-5 w-5" />
-                    ) : (
-                      actualIndex + 1
-                    )}
-                  </div>
-                  <div className="text-xs sm:text-xs md:text-sm lg:text-base xl:text-base w-full">
-                    {label}
-                  </div>
-                </div>
-              );
-            })}
+    <div className="space-y-8">
+      {/* Hero section */}
+      <section className="bg-accent rounded-xl p-8 text-accent-foreground">
+        <div className="max-w-3xl mx-auto text-center space-y-4">
+          <h1 className="text-3xl md:text-4xl font-bold">
+            Welcome to Iconad Learning with AI
+          </h1>
+          <p className="text-lg">
+            Discover personalized learning materials tailored to your
+            child&apos;s unique traits, interests, and learning style.
+          </p>
+
+          <div className="flex flex-col sm:flex-row gap-4 justify-center mt-6">
+            <Button
+              size="lg"
+              className="gap-2"
+              onClick={() => router.push("/check")}
+            >
+              Start a Child Analysis
+              <Activity className="h-4 w-4" />
+            </Button>
+            <Button
+              variant="outline"
+              size="lg"
+              className="gap-2"
+              onClick={() => router.push("/upload")}
+            >
+              Upload Materials <Upload className="h-4 w-4" />
+            </Button>
           </div>
         </div>
-        <button
-          onClick={handleChevronRight}
-          disabled={visibleEnd >= steps.length}
-          className="ml-2"
-        >
-          <ChevronRight className="h-6 w-6 text-gray-500" />
-        </button>
-      </div>
+      </section>
 
-      <div className="px-4">{renderStepContent(activeStep)}</div>
-      <div className="mt-6 flex justify-between">
-        <Button
-          variant={"secondary"}
-          disabled={activeStep === 0}
-          onClick={handleBack}
-          className="py-2 px-4"
-        >
-          Back
-        </Button>
-        <Button
-          onClick={activeStep === steps.length - 1 ? handleSubmit : handleNext}
-          disabled={!isStepComplete || isLoading}
-          className="py-2 px-6  rounded-lg"
-        >
-          {isLoading ? (
-            <Spinner />
-          ) : activeStep === steps.length - 1 ? (
-            "Submit"
-          ) : (
-            "Next"
-          )}
-        </Button>
-      </div>
-      {submitted && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50">
-          <div className="relative p-8 bg-white rounded-lg max-w-lg mx-auto">
-            <h2 className="text-xl md:text-2xl mb-4">Results:</h2>
-            {summary && summary.length > 0 ? (
-              summary.map((item, index) => {
-                const contentLinks = item.content_links;
-                return (
-                  <div
-                    key={index}
-                    className="bg-gray-100 p-4 mb-4 rounded-lg text-center"
-                  >
-                    <p className="mb-2 text-lg md:text-xl">
-                      Hey, we found the best learning materials for you!
-                    </p>
-                    <Button
-                      variant={"secondary"}
-                      onClick={() => {
-                        if (Array.isArray(contentLinks)) {
-                          handleDownloadAll(contentLinks);
-                        }
-                      }}
-                      className="mt-2 py-2 px-4 bg-blue-600 text-white rounded-lg text-sm md:text-base"
-                    >
-                      Download All
-                    </Button>
+      {/* Search section */}
+      <section className="max-w-sm">
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-muted-foreground h-5 w-5" />
+          <Input
+            placeholder="Search for learning materials..."
+            className="pl-10 py-6"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+      </section>
+
+      {/* Main content */}
+      <Tabs defaultValue="recommended" className="w-full">
+        <TabsList className="grid grid-cols-3 mb-6">
+          <TabsTrigger value="recommended" className="gap-2">
+            <Sparkles className="h-4 w-4" /> Recommended
+          </TabsTrigger>
+          <TabsTrigger value="categories" className="gap-2">
+            <BookOpen className="h-4 w-4" /> Categories
+          </TabsTrigger>
+          <TabsTrigger value="childProfile" className="gap-2">
+            <User className="h-4 w-4" /> Child Profile
+          </TabsTrigger>
+        </TabsList>
+
+        {/* Recommended tab */}
+        <TabsContent value="recommended" className="space-y-6">
+          <h2 className="text-2xl font-semibold flex items-center gap-2">
+            <Sparkles className="h-5 w-5 text-primary" />
+            Recommended Learning Materials
+          </h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {recommendedMaterials.map((material) => (
+              <Card
+                key={material.id}
+                className="overflow-hidden hover:shadow-md transition-shadow"
+              >
+                <CardHeader className="pb-2">
+                  <div className="flex justify-between items-start">
+                    {material.icon}
+                    <span className="text-sm font-medium px-2 py-1 rounded-full bg-secondary text-secondary-foreground">
+                      {material.ageRange}
+                    </span>
                   </div>
-                );
-              })
-            ) : (
-              <div className="bg-red-100 p-4 mb-4 rounded-lg text-center">
-                <p className="text-lg md:text-xl text-gray-700">
-                  No learning materials found.
-                </p>
+                  <CardTitle className="text-xl mt-2">
+                    {material.title}
+                  </CardTitle>
+                  <CardDescription>{material.category}</CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <p>{material.description}</p>
+                  <div className="flex flex-wrap gap-2 mt-3">
+                    {material.tags.map((tag) => (
+                      <span
+                        key={tag}
+                        className="text-xs px-2 py-1 rounded-full bg-muted text-muted-foreground"
+                      >
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </CardContent>
+                <CardFooter>
+                  <Button variant="ghost" className="w-full justify-between">
+                    View Material <ArrowRight className="h-4 w-4" />
+                  </Button>
+                </CardFooter>
+              </Card>
+            ))}
+          </div>
+        </TabsContent>
+
+        {/* Categories tab */}
+        <TabsContent value="categories" className="space-y-6">
+          <h2 className="text-2xl font-semibold flex items-center gap-2">
+            <BookOpen className="h-5 w-5 text-primary" />
+            Browse by Category
+          </h2>
+
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+            {categories.map((category) => (
+              <Button
+                key={category.name}
+                variant="outline"
+                className="h-auto py-6 flex flex-col gap-3 hover:bg-accent hover:text-accent-foreground"
+              >
+                {category.icon}
+                <span>{category.name}</span>
+              </Button>
+            ))}
+          </div>
+        </TabsContent>
+
+        {/* Child Profile tab */}
+        <TabsContent value="childProfile" className="space-y-6">
+          <ChildProfileContainer />
+        </TabsContent>
+      </Tabs>
+
+      {/* Features section */}
+      <section className="mt-12">
+        <h2 className="text-2xl font-semibold mb-6 text-center">
+          How Iconad Learning Works
+        </h2>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <Card className="bg-card">
+            <CardHeader>
+              <div className="bg-primary/10 w-12 h-12 rounded-full flex items-center justify-center mb-2">
+                <Brain className="h-6 w-6 text-primary" />
               </div>
-            )}
+              <CardTitle>Personalized Learning</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p>
+                Our AI analyzes your child&apos;s traits, interests, and
+                learning style to recommend the perfect materials.
+              </p>
+            </CardContent>
+          </Card>
 
-            <div className="w-full justify-center flex mt-4">
-              <Button
-                variant={"outline"}
-                className="mt-2 py-2 px-4 border-gray-600 border-2 rounded-lg text-sm md:text-base"
-                onClick={handleProceedToAI}
-              >
-                Proceed to AI Assistant
-              </Button>
-              <Button
-                variant={"secondary"}
-                onClick={() => setSubmitted(false)}
-                className="ml-4 mt-2 py-2 px-4 bg-gray-200 text-gray-700 rounded-lg"
-              >
-                Close
-              </Button>
-            </div>
-          </div>
+          <Card className="bg-card">
+            <CardHeader>
+              <div className="bg-primary/10 w-12 h-12 rounded-full flex items-center justify-center mb-2">
+                <MessageSquare className="h-6 w-6 text-primary" />
+              </div>
+              <CardTitle>Ongoing Conversations</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p>
+                Share your child&apos;s progress and get new recommendations if
+                current materials aren&apos;t working well.
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="bg-card">
+            <CardHeader>
+              <div className="bg-primary/10 w-12 h-12 rounded-full flex items-center justify-center mb-2">
+                <Upload className="h-6 w-6 text-primary" />
+              </div>
+              <CardTitle>Community Contributions</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <p>
+                Upload your own learning materials to help other parents and
+                expand our knowledge base.
+              </p>
+            </CardContent>
+          </Card>
         </div>
-      )}
+      </section>
     </div>
   );
 }
