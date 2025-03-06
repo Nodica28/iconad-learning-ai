@@ -48,20 +48,22 @@ export default function MaterialsTable() {
           <span>Refresh</span>
         </Button>
       </div>
-      {isLoading ? (
-        <div className="flex justify-center py-4">
-          <Spinner />
-        </div>
-      ) : (
-        <MaterialsTableBody
-          learningMaterials={learningMaterials}
-          setMaterialToEdit={setMaterialToEdit}
-          setIsEditDialogOpen={setIsEditDialogOpen}
-          setMaterialToDelete={setMaterialToDelete}
-          setIsDialogOpen={setIsDialogOpen}
-          isLoading={isLoading}
-        />
-      )}
+      <div className="overflow-y-auto max-h-96">
+        {isLoading ? (
+          <div className="flex justify-center py-4">
+            <Spinner />
+          </div>
+        ) : (
+          <MaterialsTableBody
+            learningMaterials={learningMaterials}
+            setMaterialToEdit={setMaterialToEdit}
+            setIsEditDialogOpen={setIsEditDialogOpen}
+            setMaterialToDelete={setMaterialToDelete}
+            setIsDialogOpen={setIsDialogOpen}
+            isLoading={isLoading}
+          />
+        )}
+      </div>
       <EditDialog
         isEditDialogOpen={isEditDialogOpen}
         materialToEdit={materialToEdit}
