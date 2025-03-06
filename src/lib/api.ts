@@ -34,6 +34,47 @@ export const loginUser = async (email: string) => {
 
 export const getUserData = async () => {
   const user = localStorage.getItem("user");
+  
+  // Check if user exists and is not "undefined"
+  if (!user || user === "undefined") {
+    console.log("No valid user found in localStorage");
+    // Return a default user object or redirect to login
+    return null;
+  }
+
+  try {
+    const { email } = JSON.parse(user);
+
+    if (!email || typeof email !== "string" || email.trim() === "") {
+      console.error("Email is not a valid string.");
+      return null;
+    }
+    
+    const res = await fetch(`/api/user/info`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ email }),
+    });
+
+    if (!res.ok) {
+      console.error("Failed to get user data.");
+      return null;
+    }
+
+    return res.json();
+  } catch (error) {
+    console.error("Error parsing user data:", error);
+    // Clear the invalid data from localStorage
+    localStorage.removeItem("user");
+    return null;
+  }
+};
+
+export const updateUserInfo = async (newEmail: string, newLastProgress: string) => {
+
+  const user = localStorage.getItem("user");
   if (!user) {
     throw new Error("No user found in localStorage.");
   }
@@ -43,20 +84,20 @@ export const getUserData = async () => {
   if (!email || typeof email !== "string" || email.trim() === "") {
     throw new Error("Email is not a valid string.");
   }
+
   const res = await fetch(`/api/user/info`, {
-    method: "POST",
+    method: "PUT",
     headers: {
-      "Content-Type": "application/json",
+      "Content-Type": "application/json", 
     },
-    body: JSON.stringify({ email }),
+    body: JSON.stringify({ email, newEmail, lastProgress: newLastProgress }),
   });
 
   if (!res.ok) {
-    throw new Error("Failed to get user data.");
-  }
+    throw new Error("Failed to update user info.");
+  } 
+}
 
-  return res.json();
-};
 
 export const createAssistant = async (
   instructions: string,
@@ -166,6 +207,30 @@ export const saveProgress = async (email: string, progress: string) => {
   });
   if (!res.ok) {
     throw new Error("Failed to save progress.");
+  }
+  return res.json();
+};
+
+export const saveTraits = async (traits: object) => {
+  const user = localStorage.getItem("user");
+  if (!user) {
+    throw new Error("No user found in localStorage.");
+  }
+
+  const { email } = JSON.parse(user);
+
+  if (!email || typeof email !== "string" || email.trim() === "") {
+    throw new Error("Email is not a valid string.");
+  }
+  const res = await fetch(`/api/traits`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({ email, traits }),
+  });
+  if (!res.ok) {
+    throw new Error("Failed to save traits.");
   }
   return res.json();
 };

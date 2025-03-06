@@ -1,5 +1,22 @@
 import clientPromise from "@/lib/mongodb";
 
+export const saveTraits = async (email: string, traits: object) => {
+  try {
+    const client = await clientPromise;
+    const db = client.db("userDB");
+
+    await db
+      .collection("users")
+      .updateOne(
+        { email },
+        { $set: { childTraits: traits, updatedAt: new Date() } },
+        { upsert: true }
+      );
+  } catch (error) {
+    console.error("Failed to save child traits:", error)
+  }
+};
+
 export const saveProgress = async (email: string, progress: string) => {
   try {
     const client = await clientPromise;

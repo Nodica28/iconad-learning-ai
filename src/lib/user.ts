@@ -60,3 +60,34 @@ export const retrieveInfo = async (email: string) => {
     throw error;
   }
 };
+
+export const updateInfo = async (email: string, newEmail: string, lastProgress: string) => {
+  try {
+    const client = await clientPromise;
+    const db = client.db("userDB");
+    const collection = db.collection("users");
+
+    const userInfo = await collection.findOne({ email });
+
+    if (!userInfo) {
+      throw new Error("User not found.");
+    }
+
+    const updatedUser = await collection.updateOne(
+      { email },
+      { $set: { email: newEmail, lastProgress } }
+    );
+
+    if (!updatedUser) {
+      throw new Error("Failed to update user information.");
+    }
+
+    const newUserInfo = await collection.findOne({ email: newEmail });
+
+    return newUserInfo;
+  } catch (error) {
+    console.error("Error updating user information:", error);
+    throw error;
+  }
+};
+
