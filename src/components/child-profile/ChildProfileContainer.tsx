@@ -24,7 +24,7 @@ const formatTraitKey = (key: string): string => {
 
 const ChildProfileContainer = () => {
   const [userData, setUserData] = useState<any>(null);
-  const [childName, setChildName] = useState("");
+  const [childName] = useState("");
   const [childAge, setChildAge] = useState("");
   const [interests, setInterests] = useState("");
   const [learningStyle, setLearningStyle] = useState("");

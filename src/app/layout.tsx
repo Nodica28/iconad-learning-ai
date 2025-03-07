@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { useRouter, usePathname } from "next/navigation";
 import localFont from "next/font/local";
 import "./globals.css";
@@ -7,14 +7,14 @@ import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/components/ui/use-toast";
 import { getUserData } from "@/lib/api";
 import Link from "next/link";
-import { 
-  BookOpen, 
-  MessageSquare, 
-  Upload, 
-  User, 
+import {
+  BookOpen,
+  MessageSquare,
+  Upload,
+  User,
   LogOut,
   Menu,
-  X
+  X,
 } from "lucide-react";
 
 const geistSans = localFont({
@@ -38,7 +38,7 @@ export default function RootLayout({
   const pathname = usePathname();
   const [mobileMenuOpen, setMobileMenuOpen] = React.useState(false);
   const [hasConversations, setHasConversations] = React.useState(false);
-  
+
   // Check if current path is login or register
   const isAuthPage = pathname === "/login" || pathname === "/register";
 
@@ -47,7 +47,7 @@ export default function RootLayout({
       const user = localStorage.getItem("user");
       const currentPath = window.location.pathname;
       const excludedPaths = ["/login", "/register"];
-      
+
       if (!excludedPaths.includes(currentPath)) {
         if (!user || user === undefined) {
           toast({
@@ -70,7 +70,9 @@ export default function RootLayout({
           try {
             const updatedUser = await getUserData();
             localStorage.setItem("user", JSON.stringify(updatedUser));
-            setHasConversations(updatedUser.conversations && updatedUser.conversations.length > 0);
+            setHasConversations(
+              updatedUser.conversations && updatedUser.conversations.length > 0
+            );
           } catch (error) {
             console.error("Error fetching user data:", error);
           }

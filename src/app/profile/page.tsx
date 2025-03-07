@@ -13,7 +13,7 @@ import {
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { Mail, Clock } from "lucide-react";
+import { Mail } from "lucide-react";
 import { updateUserInfo } from "@/lib/api";
 import { useRouter } from "next/navigation";
 

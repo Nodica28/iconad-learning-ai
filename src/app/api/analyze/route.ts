@@ -33,7 +33,7 @@ async function processPdfFile(file: File): Promise<string> {
   });
 
   // Run the assistant on the thread
-  const run = await openai.beta.threads.runs.createAndPoll(thread.id, {
+  await openai.beta.threads.runs.createAndPoll(thread.id, {
     assistant_id: assistantId,
   });
 
