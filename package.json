@@ -10,7 +10,10 @@
     "prepare": "husky",
     "commit": "cz",
     "prettier": "prettier .",
-    "fix:format": "prettier --write ."
+    "fix:format": "prettier --write .",
+    "preview:worker": "opennextjs-cloudflare && wrangler dev",
+    "deploy:worker": "opennextjs-cloudflare && wrangler deploy",
+    "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx}": "eslint --fix",
@@ -22,8 +25,10 @@
     }
   },
   "engines": {
-    "node": "v22.2.x",
-    "pnpm": "9.12.3"
+    "node": ">=18.17.1"
+  },
+  "resolutions": {
+    "esbuild": "0.25.0"
   },
   "dependencies": {
     "@aws-sdk/client-s3": "^3.688.0",
@@ -54,6 +59,7 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@opennextjs/cloudflare": "^0.5.8",
     "@types/react": "^18",
     "@types/react-dom": "^18",
     "commitizen": "^4.3.1",
@@ -64,6 +70,7 @@
     "husky": "^9.1.6",
     "lint-staged": "^15.2.10",
     "prettier": "3.3.3",
-    "typescript": "^5"
+    "typescript": "^5",
+    "wrangler": "^3.114.0"
   }
 }

@@ -19,6 +19,7 @@ coverage
 build
 dist
 dist-ssr
+.open-next
 
 # Misc
 .DS_Store

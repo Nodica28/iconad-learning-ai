@@ -1,0 +1,4 @@
+omit=optional
+network-timeout=100000
+audit=false
+fund=false 
