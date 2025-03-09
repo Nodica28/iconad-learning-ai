@@ -58,24 +58,53 @@ export default function RootLayout({
           return;
         }
 
-        const { email } = JSON.parse(user);
+        try {
+          const parsedUser = JSON.parse(user);
 
-        if (!email || typeof email !== "string" || email.trim() === "") {
+          if (!parsedUser) {
+            localStorage.removeItem("user");
+            router.push("/login");
+            toast({
+              title: "Unauthorized",
+              description: "Invalid user data. Please log in again.",
+            });
+            return;
+          }
+
+          const { email } = parsedUser;
+
+          if (!email || typeof email !== "string" || email.trim() === "") {
+            localStorage.removeItem("user");
+            router.push("/login");
+            toast({
+              title: "Unauthorized",
+              description: "Please log in to access this page.",
+            });
+          } else {
+            try {
+              const updatedUser = await getUserData();
+              console.log(updatedUser);
+              localStorage.setItem("user", JSON.stringify(updatedUser));
+              if (
+                updatedUser.conversations &&
+                updatedUser.conversations.length > 0
+              ) {
+                setHasConversations(true);
+              } else {
+                setHasConversations(false);
+              }
+            } catch (error) {
+              console.error("Error fetching user data:", error);
+            }
+          }
+        } catch (error) {
+          console.error("Error parsing user data:", error);
+          localStorage.removeItem("user");
           router.push("/login");
           toast({
             title: "Unauthorized",
-            description: "Please log in to access this page.",
+            description: "Invalid user data. Please log in again.",
           });
-        } else {
-          try {
-            const updatedUser = await getUserData();
-            localStorage.setItem("user", JSON.stringify(updatedUser));
-            setHasConversations(
-              updatedUser.conversations && updatedUser.conversations.length > 0
-            );
-          } catch (error) {
-            console.error("Error fetching user data:", error);
-          }
         }
       }
     };

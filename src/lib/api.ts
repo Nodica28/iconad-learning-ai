@@ -34,7 +34,7 @@ export const loginUser = async (email: string) => {
 
 export const getUserData = async () => {
   const user = localStorage.getItem("user");
-  
+
   // Check if user exists and is not "undefined"
   if (!user || user === "undefined") {
     console.log("No valid user found in localStorage");
@@ -49,7 +49,7 @@ export const getUserData = async () => {
       console.error("Email is not a valid string.");
       return null;
     }
-    
+
     const res = await fetch(`/api/user/info`, {
       method: "POST",
       headers: {
@@ -72,8 +72,10 @@ export const getUserData = async () => {
   }
 };
 
-export const updateUserInfo = async (newEmail: string, newLastProgress: string) => {
-
+export const updateUserInfo = async (
+  newEmail: string,
+  newLastProgress: string
+) => {
   const user = localStorage.getItem("user");
   if (!user) {
     throw new Error("No user found in localStorage.");
@@ -88,16 +90,15 @@ export const updateUserInfo = async (newEmail: string, newLastProgress: string) 
   const res = await fetch(`/api/user/info`, {
     method: "PUT",
     headers: {
-      "Content-Type": "application/json", 
+      "Content-Type": "application/json",
     },
     body: JSON.stringify({ email, newEmail, lastProgress: newLastProgress }),
   });
 
   if (!res.ok) {
     throw new Error("Failed to update user info.");
-  } 
-}
-
+  }
+};
 
 export const createAssistant = async (
   instructions: string,
@@ -337,6 +338,7 @@ export const getMaterials = async () => {
     throw new Error("Email is not a valid string.");
   }
 
+  // Use query parameters instead of body for GET request
   const res = await fetch(`/api/store?email=${encodeURIComponent(email)}`, {
     method: "GET",
     headers: {
